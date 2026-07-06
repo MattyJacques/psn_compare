@@ -28,6 +28,12 @@ RSpec.describe SyncJob do
     expect(account.sync_runs.sole).to have_attributes(status: "failed", error_message: "boom")
   end
 
+  it "marks the run failed and re-raises on unexpected errors" do
+    allow(Sync::Trophies).to receive(:call).and_raise(RuntimeError, "unexpected")
+    expect { described_class.perform_now(account, "trophies") }.to raise_error(RuntimeError, "unexpected")
+    expect(account.sync_runs.sole).to have_attributes(status: "failed", error_message: "unexpected")
+  end
+
   it "SyncAccountJob fans out one SyncJob per kind" do
     expect {
       SyncAccountJob.perform_now(account)

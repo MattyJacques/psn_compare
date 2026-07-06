@@ -18,5 +18,8 @@ class SyncJob < ApplicationJob
     self.class.set(wait: e.retry_after || 60).perform_later(account, kind)
   rescue PSN::Error => e
     run.update!(status: "failed", error_message: e.message, completed_at: Time.current)
+  rescue StandardError => e
+    run&.update!(status: "failed", error_message: e.message, completed_at: Time.current)
+    raise
   end
 end
