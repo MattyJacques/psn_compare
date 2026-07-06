@@ -59,4 +59,4 @@ group :development do
   gem "web-console"
 end
 
-gem "psn-client-ruby", path: "../psn-client-ruby"
+gem "psn-client-ruby", path: "../psn-client-ruby", require: "psn_client"
