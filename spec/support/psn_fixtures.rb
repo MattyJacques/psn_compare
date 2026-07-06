@@ -22,6 +22,13 @@ module PsnFixtures
   def psn_trophy_summary(level: 300, counts: { bronze: 10, silver: 5, gold: 2, platinum: 1 })
     PSN::TrophySummary.new(level:, progress: 10, tier: 3, earned_counts: counts, raw: {})
   end
+
+  def psn_entitlement(id: "ENT-1", name: "Astro Bot", type: "ps5_native_game",
+                      platform: "PS5", acquired_at: Time.utc(2024, 1, 5),
+                      product_id: "EP9000-PPSA01325_00-ASTROBOT0000000")
+    PSN::Entitlement.new(id:, name:, type:, platform:, acquired_at:,
+                         raw: { "product_id" => product_id })
+  end
 end
 
 RSpec.configure { |c| c.include PsnFixtures }
