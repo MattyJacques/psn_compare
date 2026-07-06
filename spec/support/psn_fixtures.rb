@@ -29,6 +29,12 @@ module PsnFixtures
     PSN::Entitlement.new(id:, name:, type:, platform:, acquired_at:,
                          raw: { "product_id" => product_id })
   end
+
+  def psn_transaction(transaction_id: "TXN-1", type: "PURCHASE", amount: 6999, currency: "GBP",
+                      date: Time.utc(2024, 2, 1), description: "Astro Bot")
+    PSN::Transaction.new(transaction_id:, date:, description:, amount:, currency:,
+                         payment_method: "Visa", type:, raw: {})
+  end
 end
 
 RSpec.configure { |c| c.include PsnFixtures }
