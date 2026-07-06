@@ -47,4 +47,24 @@ RSpec.describe Sync::Trophies do
     expect(Game.count).to eq(1)
     expect(account.account_trophies.count).to eq(2)
   end
+
+  it "rolls back the account_game update when the trophy fetch fails mid-game" do
+    allow(trophies_resource).to receive(:earned).and_raise(PSN::APIError, "boom")
+    expect { described_class.call(account) }.to raise_error(PSN::APIError)
+
+    game = Game.find_by!(np_communication_id: "NPWR11111_00")
+    expect(account.account_games.find_by(game:)&.progress).not_to eq(40)
+    expect(account.account_trophies.count).to eq(0)
+  end
+
+  it "re-fetches trophies when a game's progress has changed" do
+    described_class.call(account)
+
+    updated_title = psn_trophy_title(progress: 60, last_updated: "2024-06-01T10:00:00Z")
+    allow(trophies_resource).to receive(:titles).and_return([updated_title].lazy)
+    described_class.call(account)
+
+    expect(trophies_resource).to have_received(:earned).twice
+    expect(account.account_games.sole.progress).to eq(60)
+  end
 end

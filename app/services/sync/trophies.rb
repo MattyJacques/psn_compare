@@ -28,9 +28,11 @@ module Sync
       last_played = Time.iso8601(title.raw["lastUpdatedDateTime"]) if title.raw["lastUpdatedDateTime"]
       return if unchanged?(account_game, title, last_played)
 
-      account_game.update!(progress: title.progress, last_played_at: last_played,
-                           **counts(:earned, title.earned_counts))
-      sync_trophies(client, game, title)
+      ApplicationRecord.transaction do
+        account_game.update!(progress: title.progress, last_played_at: last_played,
+                             **counts(:earned, title.earned_counts))
+        sync_trophies(client, game, title)
+      end
     end
 
     def unchanged?(account_game, title, last_played)
