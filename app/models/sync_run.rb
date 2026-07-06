@@ -10,8 +10,9 @@ class SyncRun < ApplicationRecord
   # Any sync-run change refreshes pages subscribed to the sync_status stream.
   broadcasts_refreshes_to ->(_run) { "sync_status" }
 
-  # Newest run per kind for one account's runs.
+  # Newest run per kind. Sorts in memory so a preloaded association
+  # (accounts index) doesn't trigger one query per account.
   def self.latest_per_kind
-    order(created_at: :desc).group_by(&:kind).transform_values(&:first)
+    all.sort_by(&:created_at).reverse.group_by(&:kind).transform_values(&:first)
   end
 end
