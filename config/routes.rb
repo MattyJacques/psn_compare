@@ -22,4 +22,5 @@ Rails.application.routes.draw do
 
   resources :ownership, only: :index
   resources :spend, only: :index
+  resources :trophy_comparison, only: :index
 end
