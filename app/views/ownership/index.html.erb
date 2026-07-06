@@ -1,0 +1,41 @@
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold">Ownership matrix</h1>
+  <% if params[:include_dlc].present? %>
+    <%= link_to "Games only", ownership_index_path, class: "text-blue-600 underline" %>
+  <% else %>
+    <%= link_to "Include DLC", ownership_index_path(include_dlc: 1), class: "text-blue-600 underline" %>
+  <% end %>
+</div>
+
+<div class="overflow-x-auto">
+  <table class="min-w-full border text-sm">
+    <thead>
+      <tr class="bg-gray-100 text-left">
+        <th class="border p-2">Title</th>
+        <th class="border p-2">Platform</th>
+        <% @accounts.each do |account| %>
+          <th class="border p-2"><%= account.label %></th>
+        <% end %>
+        <th class="border p-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @rows.each do |row| %>
+        <tr class="<%= "bg-amber-50" if row.duplicate? %>">
+          <td class="border p-2"><%= row.name %></td>
+          <td class="border p-2"><%= row.platform %></td>
+          <% @accounts.each do |account| %>
+            <td class="border p-2">
+              <% if (ent = row.by_account_id[account.id]) %>
+                ✓ <span class="text-gray-500"><%= ent.acquired_at&.to_date %></span>
+              <% end %>
+            </td>
+          <% end %>
+          <td class="border p-2">
+            <% if row.duplicate? %><span class="rounded bg-amber-200 px-2 py-0.5">Duplicate</span><% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

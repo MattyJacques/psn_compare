@@ -19,4 +19,6 @@ Rails.application.routes.draw do
       patch :reauth
     end
   end
+
+  resources :ownership, only: :index
 end
