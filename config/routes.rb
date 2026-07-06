@@ -21,4 +21,5 @@ Rails.application.routes.draw do
   end
 
   resources :ownership, only: :index
+  resources :spend, only: :index
 end
