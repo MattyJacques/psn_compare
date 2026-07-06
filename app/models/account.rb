@@ -18,4 +18,24 @@ class Account < ApplicationRecord
       update!(current: true)
     end
   end
+
+  # Yields an authenticated PSN client. The gem rotates the refresh token on
+  # use, so persist whatever it ends up holding — even if the block raised.
+  def with_client
+    client = PSN::Client.new(refresh_token: refresh_token)
+    yield client
+  rescue PSN::AuthenticationError
+    update!(needs_reauth: true)
+    raise
+  ensure
+    if client&.refresh_token.present? && client.refresh_token != refresh_token
+      update!(refresh_token: client.refresh_token)
+    end
+  end
+
+  def reauthenticate!(npsso)
+    client = PSN::Client.new(npsso: npsso)
+    client.access_token # force the exchange now so bad tokens fail here
+    update!(refresh_token: client.refresh_token, needs_reauth: false)
+  end
 end
