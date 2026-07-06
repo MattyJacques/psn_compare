@@ -1,0 +1,51 @@
+<%= turbo_stream_from "sync_status" %>
+<h1 class="mb-6 text-2xl font-bold">Dashboard</h1>
+
+<% if @accounts.empty? %>
+  <p class="text-gray-600">No accounts yet.
+    <%= link_to "Add account", new_account_path, class: "text-blue-600 underline" %>
+  </p>
+<% else %>
+  <div class="grid gap-4 md:grid-cols-2">
+    <% @accounts.each do |account| %>
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <span class="text-lg font-semibold"><%= account.label %></span>
+          <% if account.current? %>
+            <span class="rounded bg-blue-100 px-2 py-0.5 text-sm text-blue-800">Current</span>
+          <% end %>
+        </div>
+        <dl class="mt-2 space-y-1 text-sm text-gray-700">
+          <div>Trophy level: <span class="font-medium"><%= account.trophy_level || "—" %></span></div>
+          <div>
+            <%= account.earned_platinum %> platinum ·
+            <%= account.earned_gold %> gold ·
+            <%= account.earned_silver %> silver ·
+            <%= account.earned_bronze %> bronze
+          </div>
+          <div>
+            Net spend:
+            <% spends = @spend_by_account.select { |(id, _), _| id == account.id } %>
+            <% if spends.empty? %>—<% end %>
+            <% spends.each do |(_, currency), total| %>
+              <span class="font-medium">
+                <%= format_money(total - (@refunds_by_account[[account.id, currency]] || 0), currency) %>
+              </span>
+            <% end %>
+          </div>
+          <div>Last synced: <%= account.last_synced_at ? time_ago_in_words(account.last_synced_at) + " ago" : "never" %></div>
+        </dl>
+        <% if account.needs_reauth? %>
+          <p class="mt-2 rounded bg-red-100 p-2 text-sm text-red-800">
+            Needs re-authentication — <%= link_to "fix on the accounts page", accounts_path, class: "underline" %>
+          </p>
+        <% end %>
+        <div class="mt-2 text-sm text-gray-600">
+          <% account.sync_runs.latest_per_kind.each do |kind, run| %>
+            <span class="mr-3"><%= kind %>: <%= run.status %><% if run.error_message.present? %> (<%= run.error_message %>)<% end %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
