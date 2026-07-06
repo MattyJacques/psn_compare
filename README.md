@@ -1,24 +1,26 @@
-# README
+# PSN Compare
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Compares trophies and purchases across multiple PSN accounts and tracks
+re-earning every trophy ever earned on a designated current account.
+Built on [psn-client-ruby](https://github.com/MattyJacques/psn-client-ruby).
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+    bundle install
+    bin/rails db:prepare
 
-* System dependencies
+## Running
 
-* Configuration
+    bin/dev          # web + tailwind; background jobs run asynchronously in dev
 
-* Database creation
+Add each PSN account on the Accounts page with an NPSSO token (sign in at
+playstation.com, then visit https://ca.account.sony.com/api/v1/ssocookie).
+The token is used once; the app stores an encrypted rotating refresh token.
+Then hit "Sync now" — trophies, entitlements, and transactions sync in the
+background, and re-sync daily.
 
-* Database initialization
+## Tests
 
-* How to run the test suite
+    bundle exec rspec
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Spec: docs/superpowers/specs/2026-07-06-psn-compare-design.md

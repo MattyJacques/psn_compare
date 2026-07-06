@@ -24,7 +24,17 @@
   </head>
 
   <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+    <nav class="mb-8 border-b bg-gray-50">
+      <div class="mx-auto flex max-w-6xl gap-6 p-4 font-medium">
+        <%= link_to "Dashboard", root_path %>
+        <%= link_to "Re-earn", reearn_path %>
+        <%= link_to "Trophies", trophy_comparison_index_path %>
+        <%= link_to "Ownership", ownership_index_path %>
+        <%= link_to "Spend", spend_index_path %>
+        <%= link_to "Accounts", accounts_path %>
+      </div>
+    </nav>
+    <main class="mx-auto max-w-6xl px-4">
       <%= yield %>
     </main>
   </body>
