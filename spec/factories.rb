@@ -35,4 +35,32 @@ FactoryBot.define do
     earned { true }
     earned_at { Time.zone.local(2020, 1, 1) }
   end
+
+  factory :entitlement do
+    account
+    sequence(:entitlement_id) { |n| "ENT-#{n}" }
+    sequence(:product_id) { |n| "EP9000-CUSA%05d_00" % n }
+    sequence(:name) { |n| "Product #{n}" }
+    kind { "game" }
+    platform { "PS5" }
+    acquired_at { Time.zone.local(2021, 6, 1) }
+  end
+
+  factory :psn_transaction do
+    account
+    sequence(:psn_transaction_id) { |n| "TXN-#{n}" }
+    kind { "purchase" }
+    amount_minor { 6999 }
+    currency { "GBP" }
+    occurred_at { Time.zone.local(2021, 6, 1) }
+    description { "A game" }
+  end
+
+  factory :sync_run do
+    account
+    kind { "trophies" }
+    status { "succeeded" }
+    started_at { 5.minutes.ago }
+    completed_at { 1.minute.ago }
+  end
 end

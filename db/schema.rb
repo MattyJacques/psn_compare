@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_06_224301) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_06_224601) do
   create_table "account_games", force: :cascade do |t|
     t.integer "account_id", null: false
     t.datetime "created_at", null: false
@@ -58,6 +58,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224301) do
     t.index ["psn_account_id"], name: "index_accounts_on_psn_account_id", unique: true
   end
 
+  create_table "entitlements", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "acquired_at"
+    t.datetime "created_at", null: false
+    t.string "entitlement_id", null: false
+    t.string "kind", default: "other", null: false
+    t.string "name"
+    t.string "platform"
+    t.string "product_id"
+    t.string "raw_type"
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "entitlement_id"], name: "index_entitlements_on_account_id_and_entitlement_id", unique: true
+    t.index ["account_id"], name: "index_entitlements_on_account_id"
+    t.index ["product_id"], name: "index_entitlements_on_product_id"
+  end
+
   create_table "games", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "icon_url"
@@ -70,6 +86,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224301) do
     t.integer "total_silver", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["np_communication_id"], name: "index_games_on_np_communication_id", unique: true
+  end
+
+  create_table "psn_transactions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "amount_minor"
+    t.datetime "created_at", null: false
+    t.string "currency"
+    t.text "description"
+    t.string "kind", default: "purchase", null: false
+    t.datetime "occurred_at"
+    t.string "payment_method"
+    t.string "psn_transaction_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "psn_transaction_id"], name: "index_psn_transactions_on_account_id_and_psn_transaction_id", unique: true
+    t.index ["account_id"], name: "index_psn_transactions_on_account_id"
+  end
+
+  create_table "sync_runs", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.integer "items_synced", default: 0, null: false
+    t.string "kind", null: false
+    t.datetime "started_at"
+    t.string "status", default: "running", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "kind", "created_at"], name: "index_sync_runs_on_account_id_and_kind_and_created_at"
+    t.index ["account_id"], name: "index_sync_runs_on_account_id"
   end
 
   create_table "trophies", force: :cascade do |t|
@@ -90,5 +135,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224301) do
   add_foreign_key "account_games", "games"
   add_foreign_key "account_trophies", "accounts"
   add_foreign_key "account_trophies", "trophies"
+  add_foreign_key "entitlements", "accounts"
+  add_foreign_key "psn_transactions", "accounts"
+  add_foreign_key "sync_runs", "accounts"
   add_foreign_key "trophies", "games"
 end

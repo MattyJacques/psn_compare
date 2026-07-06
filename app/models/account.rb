@@ -4,6 +4,9 @@ class Account < ApplicationRecord
   has_many :account_games, dependent: :destroy
   has_many :account_trophies, dependent: :destroy
   has_many :games, through: :account_games
+  has_many :entitlements, dependent: :destroy
+  has_many :psn_transactions, dependent: :destroy
+  has_many :sync_runs, dependent: :destroy
 
   validates :label, presence: true, uniqueness: true
 
