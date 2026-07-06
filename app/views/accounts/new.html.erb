@@ -1,0 +1,21 @@
+<h1 class="text-2xl font-bold mb-4">Add PSN account</h1>
+
+<% if flash[:alert] %>
+  <p class="mb-4 rounded bg-red-100 p-3 text-red-800"><%= flash[:alert] %></p>
+<% end %>
+
+<%= form_with url: accounts_path, scope: :account, class: "max-w-md space-y-4" do |f| %>
+  <div>
+    <%= f.label :label, "Label (e.g. Main, Old EU account)", class: "block font-medium" %>
+    <%= f.text_field :label, value: @label, required: true, class: "mt-1 w-full rounded border p-2" %>
+  </div>
+  <div>
+    <%= f.label :npsso, "NPSSO token", class: "block font-medium" %>
+    <%= f.password_field :npsso, required: true, class: "mt-1 w-full rounded border p-2" %>
+    <p class="mt-1 text-sm text-gray-500">
+      Sign in at playstation.com, then visit
+      https://ca.account.sony.com/api/v1/ssocookie to get it. Used once, never stored.
+    </p>
+  </div>
+  <%= f.submit "Add account", class: "rounded bg-blue-600 px-4 py-2 text-white" %>
+<% end %>

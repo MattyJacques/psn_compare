@@ -11,4 +11,12 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  resources :accounts, only: %i[index new create destroy] do
+    member do
+      post :sync
+      patch :make_current
+      patch :reauth
+    end
+  end
 end
