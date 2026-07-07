@@ -16,7 +16,6 @@ RSpec.describe DesignHelper, type: :helper do
 
   it "maps trophy grades to token classes" do
     expect(helper.grade_border("platinum")).to eq("border-plat")
-    expect(helper.grade_text("gold")).to eq("text-gold-t")
     expect(helper.grade_border("unknown")).to eq("border-line3")
   end
 

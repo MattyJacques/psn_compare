@@ -8,5 +8,6 @@ RSpec.describe ApplicationHelper, type: :helper do
     it { expect(helper.format_money(nil, "GBP")).to eq("—") }
     it { expect(helper.format_money(-100, "GBP")).to eq("-£1.00") }
     it { expect(helper.format_money(-1250, "SEK")).to eq("-12.50 SEK") }
+    it { expect(helper.format_money(498214, "GBP")).to eq("£4,982.14") }
   end
 end

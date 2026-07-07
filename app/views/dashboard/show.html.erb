@@ -9,14 +9,14 @@
       <div class="mt-4 space-y-2">
         <% @accounts.each do |account| %>
           <% run = account.sync_runs.order(created_at: :desc).first %>
-          <% state = account.last_synced_at ? "complete" : run&.status == "running" ? "syncing" : "waiting" %>
+          <% state = account.last_synced_at ? "complete" : run&.status == "running" ? "syncing" : run&.status == "failed" ? "failed" : "waiting" %>
           <div class="flex items-center gap-3 rounded-lg border p-4 text-sm
                       <%= state == "syncing" ? "border-line3 bg-card2" : "border-line bg-card" %>
                       <%= "opacity-60" if state == "waiting" %>">
-            <span class="<%= state == "complete" ? "text-ok" : state == "syncing" ? "text-accent" : "text-faint" %>">●</span>
+            <span class="<%= state == "complete" ? "text-ok" : state == "syncing" ? "text-accent" : state == "failed" ? "text-err" : "text-faint" %>">●</span>
             <span class="font-bold"><%= account.label %></span>
             <span class="font-mono text-xs text-mute">
-              <%= state == "complete" ? "done" : state == "syncing" ? "syncing #{run.kind} — #{run.items_synced} items" : "waiting" %>
+              <%= state == "complete" ? "done" : state == "syncing" ? "syncing #{run.kind} — #{run.items_synced} items" : state == "failed" ? "failed — #{run.error_message.presence || 'see Accounts'}" : "waiting" %>
             </span>
           </div>
         <% end %>

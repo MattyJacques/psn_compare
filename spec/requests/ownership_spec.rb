@@ -10,4 +10,16 @@ RSpec.describe "Library", type: :request do
     expect(response.body).to include("Journey")
     expect(response.body).to include("owned")
   end
+
+  it "excludes a game played on main from the not_owned filter even if only an alt account has the entitlement" do
+    main = create(:account, current: true, label: "Hunter")
+    alt = create(:account, label: "Alt")
+    game = create(:game, name: "Journey")
+    create(:account_game, account: main, game:)
+    create(:entitlement, account: alt, kind: "game", name: "Journey")
+
+    get ownership_index_path(filter: "not_owned")
+
+    expect(response.body).not_to include("Journey")
+  end
 end

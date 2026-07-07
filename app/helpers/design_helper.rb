@@ -1,8 +1,6 @@
 module DesignHelper
   GRADE_BORDER = { "platinum" => "border-plat", "gold" => "border-gold-t",
                    "silver" => "border-silver-t", "bronze" => "border-bronze-t" }.freeze
-  GRADE_TEXT = { "platinum" => "text-plat", "gold" => "text-gold-t",
-                 "silver" => "text-silver-t", "bronze" => "text-bronze-t" }.freeze
 
   def mono_date(time) = time ? time.strftime("%-d %b %Y") : "—"
   def mono_time(time) = time ? time.strftime("%H:%M") : ""
@@ -14,7 +12,6 @@ module DesignHelper
   end
 
   def grade_border(trophy_type) = GRADE_BORDER.fetch(trophy_type, "border-line3")
-  def grade_text(trophy_type) = GRADE_TEXT.fetch(trophy_type, "text-mute")
 
   def chip_classes(active)
     base = "inline-flex items-center gap-1 rounded-[20px] px-3.5 py-[7px] text-[13px] border"
