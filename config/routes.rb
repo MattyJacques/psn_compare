@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   resources :spend, only: :index
   resources :trophy_comparison, only: :index
 
+  get "reearn/backlog", to: "reearn#backlog", as: :reearn_backlog
   get "reearn", to: "reearn#show"
   post "trophies/:trophy_id/skip", to: "trophy_skips#create", as: :trophy_skip
   delete "trophies/:trophy_id/skip", to: "trophy_skips#destroy"

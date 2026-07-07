@@ -1,0 +1,58 @@
+<% if @main.nil? %>
+  <p class="text-mute">No main account set — <%= link_to "choose one in Accounts", accounts_path, class: "text-link underline hover:text-linkh" %>.</p>
+<% else %>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <div class="text-xs uppercase tracking-[0.08em] text-mute">Re-earn checklist</div>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-[-0.03em] lg:text-[40px]"><%= number_with_delimiter(@to_go) %> trophies to go</h1>
+    </div>
+    <%= render "segmented", active: :backlog %>
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-2">
+    <%= link_to "Sort: most common first", reearn_backlog_path, class: chip_classes(@sort == "common" && @filter.nil?) %>
+    <%= link_to "Rarest first", reearn_backlog_path(sort: "rare"), class: chip_classes(@sort == "rare" && @filter.nil?) %>
+    <%= link_to "Platinums only", reearn_backlog_path(filter: "platinum"), class: chip_classes(@filter == "platinum") %>
+    <%= link_to "Owned on main", reearn_backlog_path(filter: "owned"), class: chip_classes(@filter == "owned") %>
+    <%= link_to "Skipped · #{@skipped_count}", reearn_backlog_path(filter: "skipped"), class: chip_classes(@filter == "skipped") %>
+  </div>
+
+  <div class="mt-6 overflow-x-auto rounded-lg border border-line">
+    <table class="w-full min-w-[820px] text-left text-sm">
+      <thead class="bg-raise text-[11px] uppercase tracking-[0.08em] text-faint">
+        <tr>
+          <th class="px-5 py-3 font-medium">#</th>
+          <th class="px-5 py-3 font-medium">Trophy</th>
+          <th class="px-5 py-3 font-medium">Game</th>
+          <th class="px-5 py-3 font-medium">First earned</th>
+          <th class="px-5 py-3 font-medium">Rarity</th>
+          <th class="px-5 py-3 text-right font-medium">Owned on main</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @rows.each_with_index do |row, i| %>
+          <tr class="border-t border-line2">
+            <td class="px-5 py-3.5 font-mono text-xs text-faint"><%= format("%03d", i + 1) %></td>
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <span class="size-[26px] shrink-0 overflow-hidden rounded-md border-2 <%= grade_border(row.trophy.trophy_type) %>">
+                  <% if row.trophy.icon_url %><%= image_tag row.trophy.icon_url, class: "size-full object-cover", alt: "" %>
+                  <% else %><span class="stripe-tile block size-full"></span><% end %>
+                </span>
+                <span class="font-semibold"><%= row.trophy.name %></span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 text-mute"><%= row.game.name %></td>
+            <td class="px-5 py-3.5 font-mono text-xs text-mute"><%= row.first_earned_at&.year %> · <%= row.first_earned_label %></td>
+            <td class="px-5 py-3.5 font-mono text-xs <%= row.rarity.nil? ? "text-dash" : row.rarity < 5 ? "text-err" : row.rarity < 35 ? "text-warn" : "text-ok" %>">
+              <%= row.rarity ? "#{row.rarity}%" : "—" %>
+            </td>
+            <td class="px-5 py-3.5 text-right font-mono text-xs <%= row.owned_on_main ? "text-ok" : "text-err" %>">
+              <%= row.owned_on_main ? "yes" : "no" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

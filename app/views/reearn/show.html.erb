@@ -1,51 +1,75 @@
-<h1 class="mb-2 text-2xl font-bold">Re-earn tracker</h1>
-
-<% if @current_account.nil? %>
-  <p class="text-gray-600">No current account set —
-    <%= link_to "choose one on the accounts page", accounts_path, class: "text-blue-600 underline" %>.
-  </p>
+<% if @main.nil? %>
+  <p class="text-mute">No main account set — <%= link_to "choose one in Accounts", accounts_path, class: "text-link underline hover:text-linkh" %>.</p>
 <% else %>
-  <p class="mb-4 text-gray-600">
-    Re-earning every trophy ever earned on any account, as <span class="font-medium"><%= @current_account.label %></span>.
-  </p>
-
-  <div class="mb-8 rounded border p-4">
-    <div class="text-3xl font-bold"><%= @result.percent %>%</div>
-    <div class="text-gray-600"><%= @result.reearned %> of <%= @result.total %> trophies re-earned</div>
-    <div class="mt-2 h-3 w-full rounded bg-gray-200">
-      <div class="h-3 rounded bg-blue-600" style="width: <%= @result.percent %>%"></div>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <div class="text-xs uppercase tracking-[0.08em] text-mute">Re-earn checklist</div>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-[-0.03em] lg:text-[40px]"><%= number_with_delimiter(@result.games_left) %> games to finish</h1>
     </div>
+    <%= render "segmented", active: :by_game %>
   </div>
 
-  <div class="space-y-4">
-    <% @result.games.each do |gp| %>
-      <details class="rounded border p-4 <%= "opacity-60" if gp.complete? %>">
-        <summary class="cursor-pointer">
-          <span class="font-semibold"><%= gp.game.name %></span>
-          <span class="text-gray-500"><%= gp.game.platform %></span>
-          <span class="ml-2"><%= gp.reearned %>/<%= gp.total %> (<%= gp.percent %>%)</span>
-          <% if gp.complete? %><span class="ml-2 rounded bg-green-100 px-2 py-0.5 text-sm text-green-800">Complete</span><% end %>
+  <div class="mt-6 flex flex-wrap gap-2">
+    <%= link_to "Sort: closest to done", reearn_path, class: chip_classes(@filter.nil?) %>
+    <%= link_to "Owned on main only", reearn_path(filter: "owned"), class: chip_classes(@filter == "owned") %>
+    <%= link_to "Platinum missing", reearn_path(filter: "platinum"), class: chip_classes(@filter == "platinum") %>
+    <%= link_to "Skipped · #{@skipped_total}", reearn_path(filter: "skipped"), class: chip_classes(@filter == "skipped") %>
+  </div>
+
+  <div class="mt-6 space-y-3">
+    <% @games.each do |gp| %>
+      <details class="group rounded-xl border border-line bg-card open:border-line3 open:bg-card2">
+        <summary class="flex cursor-pointer list-none flex-wrap items-center gap-4 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <span class="size-11 shrink-0 overflow-hidden rounded-lg">
+            <% if gp.game.icon_url %><%= image_tag gp.game.icon_url, class: "size-full object-cover", alt: "" %>
+            <% else %><span class="stripe-tile block size-full"></span><% end %>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center gap-2 font-bold">
+              <%= gp.game.name %>
+              <span class="text-xs font-medium text-faint"><%= gp.game.platform %></span>
+              <% unless @ownership.owned?(gp.game) %>
+                <span class="rounded border border-errline bg-errbg px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-err">NOT OWNED ON MAIN</span>
+              <% end %>
+            </span>
+            <span class="mt-0.5 block truncate text-xs text-mute">first earned on <%= gp.first_earned_labels.first(2).join(" · ") %></span>
+          </span>
+          <span class="hidden w-[280px] shrink-0 md:block">
+            <span class="flex justify-between font-mono text-xs text-mute">
+              <span><%= gp.reearned %> / <%= gp.total %><%= " · #{gp.skipped} skipped" if gp.skipped.positive? %></span>
+              <span class="text-accent"><%= gp.percent %>%</span>
+            </span>
+            <span class="mt-1.5 block h-[5px] rounded-[3px] bg-raise">
+              <span class="block h-[5px] rounded-[3px] bg-accent" style="width: <%= gp.percent %>%"></span>
+            </span>
+          </span>
+          <span class="shrink-0 font-mono text-sm font-semibold text-warn"><%= gp.left %> left</span>
+          <span class="shrink-0 text-faint group-open:rotate-180">▾</span>
         </summary>
-        <table class="mt-3 min-w-full text-sm">
-          <% earned_rows = (@earned_by_game[gp.game.id] || []).group_by(&:trophy_id) %>
-          <% gp.game.trophies.order(:psn_trophy_id).each do |trophy| %>
-            <% rows = earned_rows[trophy.id] || [] %>
-            <% next if rows.empty? %>
-            <% mine = rows.find { |at| at.account_id == @current_account.id } %>
-            <tr class="border-t">
-              <td class="p-2"><%= mine ? "✅" : "⬜" %></td>
-              <td class="p-2">
-                <div class="font-medium"><%= trophy.name %></div>
-                <div class="text-gray-500"><%= trophy.detail %></div>
-              </td>
-              <td class="p-2 text-gray-600"><%= trophy.trophy_type %></td>
-              <td class="p-2 text-gray-500">
-                first earned by <%= rows.min_by { |at| at.earned_at || Time.current }&.account&.label %>
-                <% if mine&.earned_at %> · re-earned <%= mine.earned_at.to_date %><% end %>
-              </td>
-            </tr>
+        <div class="border-t border-line2 px-5 py-2">
+          <% gp.missing.each do |m| %>
+            <div class="flex flex-wrap items-center gap-3 border-b border-line2 py-3 last:border-b-0">
+              <% if m.skipped %>
+                <span class="w-[18px] text-center text-faint">⊘</span>
+              <% else %>
+                <span class="size-[18px] rounded border border-line3"></span>
+              <% end %>
+              <span class="size-[26px] shrink-0 overflow-hidden rounded-md border-2 <%= grade_border(m.trophy.trophy_type) %> <%= "opacity-45" if m.skipped %>">
+                <% if m.trophy.icon_url %><%= image_tag m.trophy.icon_url, class: "size-full object-cover", alt: "" %>
+                <% else %><span class="stripe-tile block size-full"></span><% end %>
+              </span>
+              <span class="min-w-0 flex-1 text-sm">
+                <span class="font-semibold <%= "text-faint line-through" if m.skipped %>"><%= m.trophy.name %></span>
+                <% if m.trophy.detail.present? %><span class="text-mute"> — <%= m.trophy.detail %></span><% end %>
+              </span>
+              <% if m.skipped %>
+                <span class="rounded border border-skipline px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-skip">WON'T EARN</span>
+              <% end %>
+              <span class="font-mono text-xs text-mute"><%= m.first_earned_at&.strftime("%b %Y") %> · <%= m.first_earned_label %></span>
+              <%= render "skip_button", trophy: m.trophy %>
+            </div>
           <% end %>
-        </table>
+        </div>
       </details>
     <% end %>
   </div>
