@@ -1,50 +1,99 @@
-<h1 class="mb-6 text-2xl font-bold">Dashboard</h1>
-
-<% if @accounts.empty? %>
-  <p class="text-gray-600">No accounts yet.
-    <%= link_to "Add account", new_account_path, class: "text-blue-600 underline" %>
-  </p>
+<% if @main.nil? %>
+  <p class="text-mute">No main account set — <%= link_to "choose one in Accounts", accounts_path, class: "text-link underline hover:text-linkh" %>.</p>
 <% else %>
-  <div class="grid gap-4 md:grid-cols-2">
-    <% @accounts.each do |account| %>
-      <div class="rounded border p-4">
-        <div class="flex items-center justify-between">
-          <span class="text-lg font-semibold"><%= account.label %></span>
-          <% if account.current? %>
-            <span class="rounded bg-blue-100 px-2 py-0.5 text-sm text-blue-800">Current</span>
-          <% end %>
+  <% progress = @stats.progress %>
+  <div class="text-xs uppercase tracking-[0.08em] text-mute">Re-earned on <%= @main.label %></div>
+
+  <div class="mt-2 flex flex-wrap items-end justify-between gap-6">
+    <div class="flex flex-wrap items-end gap-8">
+      <div class="font-mono text-[56px] font-extrabold leading-none tracking-[-0.04em] lg:text-[72px]">
+        <%= progress.percent %><span class="text-[28px] text-mute lg:text-[34px]">%</span>
+      </div>
+      <div class="hidden gap-8 pb-2 lg:flex">
+        <div>
+          <div class="font-mono text-xl font-semibold"><%= number_with_delimiter(progress.reearned) %></div>
+          <div class="text-xs text-mute">of <%= number_with_delimiter(progress.total) %> trophies</div>
         </div>
-        <dl class="mt-2 space-y-1 text-sm text-gray-700">
-          <div>Trophy level: <span class="font-medium"><%= account.trophy_level || "—" %></span></div>
-          <div>
-            <%= account.earned_platinum %> platinum ·
-            <%= account.earned_gold %> gold ·
-            <%= account.earned_silver %> silver ·
-            <%= account.earned_bronze %> bronze
-          </div>
-          <div>
-            Net spend:
-            <% spends = @spend_by_account.select { |(id, _), _| id == account.id } %>
-            <% if spends.empty? %>—<% end %>
-            <% spends.each do |(_, currency), total| %>
-              <span class="font-medium">
-                <%= format_money(total - (@refunds_by_account[[account.id, currency]] || 0), currency) %>
-              </span>
-            <% end %>
-          </div>
-          <div>Last synced: <%= account.last_synced_at ? time_ago_in_words(account.last_synced_at) + " ago" : "never" %></div>
-        </dl>
-        <% if account.needs_reauth? %>
-          <p class="mt-2 rounded bg-red-100 p-2 text-sm text-red-800">
-            Needs re-authentication — <%= link_to "fix on the accounts page", accounts_path, class: "underline" %>
-          </p>
-        <% end %>
-        <div class="mt-2 text-sm text-gray-600">
-          <% account.sync_runs.latest_per_kind.each do |kind, run| %>
-            <span class="mr-3"><%= kind %>: <%= run.status %><% if run.error_message.present? %> (<%= run.error_message %>)<% end %></span>
-          <% end %>
+        <div>
+          <div class="font-mono text-xl font-semibold text-warn"><%= number_with_delimiter(progress.to_go) %></div>
+          <div class="text-xs text-mute">to go</div>
+        </div>
+        <div>
+          <div class="font-mono text-xl font-semibold"><%= number_with_delimiter(progress.games_left) %></div>
+          <div class="text-xs text-mute">games left</div>
         </div>
       </div>
-    <% end %>
+    </div>
+    <%= link_to "Open checklist →", reearn_path, class: "pb-2 text-sm font-semibold text-link hover:text-linkh" %>
+  </div>
+
+  <div class="mt-5 h-2 w-full rounded-[4px] bg-raise">
+    <div class="h-2 rounded-[4px] bg-gradient-to-r from-accent2 to-accent" style="width: <%= progress.percent %>%"></div>
+  </div>
+
+  <%# Mobile stat row %>
+  <div class="mt-4 flex gap-6 lg:hidden">
+    <div><span class="font-mono font-semibold"><%= number_with_delimiter(progress.reearned) %></span> <span class="text-xs text-mute">re-earned</span></div>
+    <div><span class="font-mono font-semibold text-warn"><%= number_with_delimiter(progress.to_go) %></span> <span class="text-xs text-mute">to go</span></div>
+    <div><span class="font-mono font-semibold"><%= number_with_delimiter(progress.games_left) %></span> <span class="text-xs text-mute">games</span></div>
+  </div>
+
+  <%# Account table %>
+  <div class="mt-10 overflow-x-auto">
+    <table class="w-full min-w-[640px] text-left text-sm">
+      <thead>
+        <tr class="text-[11px] uppercase tracking-[0.08em] text-faint">
+          <th class="px-5 py-3 font-medium">Account</th>
+          <th class="px-5 py-3 font-medium">Level</th>
+          <th class="px-5 py-3 font-medium text-plat">Platinum</th>
+          <th class="px-5 py-3 font-medium text-gold-t">Gold</th>
+          <th class="px-5 py-3 font-medium text-silver-t">Silver</th>
+          <th class="px-5 py-3 font-medium text-bronze-t">Bronze</th>
+          <th class="px-5 py-3 text-right font-medium">UNIQUE TO ACCOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @accounts.each do |account| %>
+          <tr class="<%= account.current? ? "rounded-lg border border-sel bg-card2" : "border-t border-line2" %>">
+            <td class="px-5 py-4 font-bold <%= "text-navink" if account.current? %>">
+              <% if account.current? %><span class="mr-1 text-accent">●</span><% end %>
+              <%= account.label %>
+              <% if account.current? %><span class="ml-1 rounded bg-navbg px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-link">MAIN</span><% end %>
+            </td>
+            <td class="px-5 py-4 font-mono"><%= account.trophy_level || "—" %></td>
+            <td class="px-5 py-4 font-mono"><%= number_with_delimiter(account.earned_platinum) %></td>
+            <td class="px-5 py-4 font-mono"><%= number_with_delimiter(account.earned_gold) %></td>
+            <td class="px-5 py-4 font-mono"><%= number_with_delimiter(account.earned_silver) %></td>
+            <td class="px-5 py-4 font-mono"><%= number_with_delimiter(account.earned_bronze) %></td>
+            <td class="px-5 py-4 text-right font-mono <%= account.current? ? "text-dash" : "text-warn" %>">
+              <%= account.current? ? "—" : number_with_delimiter(@stats.unique_counts[account.id] || 0) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%# Summary cards %>
+  <div class="mt-8 grid gap-4 md:grid-cols-3">
+    <div class="rounded-xl border border-line bg-card p-5">
+      <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Closest to done</div>
+      <% if @stats.closest %>
+        <div class="mt-1 font-bold"><%= @stats.closest.game.name %></div>
+        <div class="mt-1 font-mono text-xs text-mute"><%= @stats.closest.reearned %> / <%= @stats.closest.total %> re-earned · <%= @stats.closest.left %> left</div>
+      <% else %><div class="mt-1 text-mute">—</div><% end %>
+    </div>
+    <div class="rounded-xl border border-line bg-card p-5">
+      <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Biggest gap</div>
+      <% if @stats.biggest_gap %>
+        <div class="mt-1 font-bold"><%= @stats.biggest_gap.game.name %></div>
+        <div class="mt-1 font-mono text-xs text-mute"><%= @stats.biggest_gap.reearned %> / <%= @stats.biggest_gap.total %> re-earned · from <%= @stats.biggest_gap.first_earned_labels.first %></div>
+      <% else %><div class="mt-1 text-mute">—</div><% end %>
+    </div>
+    <div class="rounded-xl border border-line bg-card p-5">
+      <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Not owned on main</div>
+      <div class="mt-1 font-bold"><%= @stats.not_owned_count %> games</div>
+      <div class="mt-1 font-mono text-xs text-mute">need repurchase · <%= link_to "see Library", ownership_index_path, class: "text-link hover:text-linkh" %></div>
+    </div>
   </div>
 <% end %>
