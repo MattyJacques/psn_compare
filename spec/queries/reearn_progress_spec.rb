@@ -1,42 +1,35 @@
 require "rails_helper"
 
 RSpec.describe ReearnProgress do
-  let(:current) { create(:account, current: true) }
-  let(:old) { create(:account) }
+  let(:main) { create(:account, current: true) }
+  let(:alt) { create(:account) }
+  let(:game) { create(:game) }
+  let!(:t1) { create(:trophy, game:) }
+  let!(:t2) { create(:trophy, game:) }
+  let!(:t3) { create(:trophy, game:) }
 
-  it "computes the baseline as trophies earned by anyone, progress by the current account" do
-    game = create(:game)
-    t1, t2, t3, t4 = create_list(:trophy, 4, game:)
-
-    create(:account_trophy, account: old, trophy: t1)                  # old only -> to re-earn
-    create(:account_trophy, account: old, trophy: t2)                  # earned by both
-    create(:account_trophy, account: current, trophy: t2)
-    create(:account_trophy, account: current, trophy: t3)              # current only -> still counts
-    create(:account_trophy, account: current, trophy: t4, earned: false) # unearned -> not in baseline
-
-    result = described_class.call(current)
-    expect(result.total).to eq(3)
-    expect(result.reearned).to eq(2)
-    expect(result.percent).to eq(67)
+  before do
+    # alt earned all three; main re-earned t1; t3 is skipped
+    [t1, t2, t3].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-05-01 10:00")) }
+    create(:account_trophy, account: main, trophy: t1, earned: true, earned_at: Time.zone.parse("2024-03-14 21:47"))
+    create(:trophy_skip, trophy: t3)
   end
 
-  it "reports per-game progress with complete games sorted last" do
-    done = create(:game, name: "Done Game")
-    pending = create(:game, name: "Pending Game")
-    done_trophy = create(:trophy, game: done)
-    pending_trophy = create(:trophy, game: pending)
-    create(:account_trophy, account: old, trophy: done_trophy)
-    create(:account_trophy, account: current, trophy: done_trophy)
-    create(:account_trophy, account: old, trophy: pending_trophy)
-
-    games = described_class.call(current).games
-    expect(games.map { |g| g.game.name }).to eq(["Pending Game", "Done Game"])
-    expect(games.last).to be_complete
+  it "excludes skipped trophies from every denominator" do
+    result = described_class.call(main)
+    expect(result.total).to eq(2)          # t3 skipped
+    expect(result.reearned).to eq(1)
+    expect(result.skipped).to eq(1)
+    expect(result.percent).to eq(50.0)
+    expect(result.to_go).to eq(1)
   end
 
-  it "handles an empty baseline" do
-    result = described_class.call(current)
-    expect(result.total).to eq(0)
-    expect(result.percent).to eq(0)
+  it "builds per-game missing lists including skipped rows" do
+    gp = described_class.call(main).games.first
+    expect(gp.left).to eq(1)
+    expect(gp.skipped).to eq(1)
+    expect(gp.first_earned_labels).to include(alt.label)
+    expect(gp.missing.map { |m| [m.trophy, m.skipped] }).to eq([[t2, false], [t3, true]])
+    expect(gp.missing.first.first_earned_label).to eq(alt.label)
   end
 end
