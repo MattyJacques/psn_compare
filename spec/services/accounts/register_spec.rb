@@ -28,11 +28,25 @@ RSpec.describe Accounts::Register do
   end
 
   it "creates an account from an NPSSO token" do
+    profile_with_avatar = PSN::Profile.new(online_id: "matty", account_id: "123456789",
+                                           avatar_url: "https://example.com/avatar.jpg",
+                                           plus: true, about_me: nil, languages: nil,
+                                           verified: false,
+                                           trophy_summary: PSN::TrophySummary.new(level: 420, progress: 50, tier: nil,
+                                                                                  earned_counts: { bronze: 100, silver: 50,
+                                                                                                   gold: 20, platinum: 5 },
+                                                                                  raw: {}),
+                                           online: false, platform: nil, last_online_at: nil, raw: {})
+    client = stub_psn_client(refresh_token: "fresh-refresh-token")
+    profiles = instance_double(PSN::Resources::Profiles, find: profile_with_avatar)
+    allow(client).to receive(:profiles).and_return(profiles)
+
     account = described_class.call(label: "Main", npsso: "npsso-value")
     expect(PSN::Client).to have_received(:new).with(npsso: "npsso-value")
     expect(account).to have_attributes(label: "Main", online_id: "matty",
                                        psn_account_id: "123456789", trophy_level: 420,
-                                       refresh_token: "fresh-refresh-token")
+                                       refresh_token: "fresh-refresh-token",
+                                       avatar_url: "https://example.com/avatar.jpg")
   end
 
   it "makes the first account current, but not later ones" do

@@ -16,6 +16,14 @@ RSpec.describe Sync::Trophies do
         psn_trophy(id: 0, grade: :platinum),
         psn_trophy(id: 1, earned: true, earned_at: Time.utc(2024, 4, 30, 12))
       ].lazy)
+    profiles_resource = instance_double(PSN::Resources::Profiles)
+    allow(client).to receive(:profiles).and_return(profiles_resource)
+    allow(profiles_resource).to receive(:find)
+      .and_return(PSN::Profile.new(online_id: "test_user", account_id: "123456789",
+                                   avatar_url: "https://example.com/avatar.jpg",
+                                   plus: true, about_me: nil, languages: nil, verified: false,
+                                   trophy_summary: psn_trophy_summary,
+                                   online: false, platform: nil, last_online_at: nil, raw: {}))
   end
 
   it "creates the game, its trophies, and the account's earned state" do
@@ -32,11 +40,18 @@ RSpec.describe Sync::Trophies do
     expect(earned).to have_attributes(earned: true, earned_at: Time.utc(2024, 4, 30, 12))
     unearned = account.account_trophies.joins(:trophy).find_by!(trophies: { psn_trophy_id: 0 })
     expect(unearned.earned).to be(false)
+
+    # Verify rarity is persisted
+    trophies = game.trophies.order(:psn_trophy_id)
+    expect(trophies.map(&:rarity_percent)).to all(eq(12.5))
   end
 
   it "updates the account summary caches" do
     described_class.call(account)
-    expect(account.reload).to have_attributes(trophy_level: 300, earned_platinum: 1)
+    expect(account.reload).to have_attributes(
+      trophy_level: 300, earned_platinum: 1,
+      avatar_url: "https://example.com/avatar.jpg"
+    )
     expect(account.last_synced_at).to be_present
   end
 
