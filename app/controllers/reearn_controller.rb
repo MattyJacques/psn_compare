@@ -19,7 +19,7 @@ class ReearnController < ApplicationController
     @sort = params[:sort].presence_in(BACKLOG_SORTS) || "common"
     @filter = params[:filter].presence_in(BACKLOG_FILTERS)
     @rows = ReearnBacklog.call(@main, sort: @sort, filter: @filter)
-    @to_go = ReearnBacklog.call(@main).size
+    @to_go = @filter ? ReearnBacklog.call(@main).size : @rows.size
     @skipped_count = TrophySkip.count
   end
 
