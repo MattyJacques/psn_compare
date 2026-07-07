@@ -80,19 +80,19 @@
       <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Closest to done</div>
       <% if @stats.closest %>
         <div class="mt-1 font-bold"><%= @stats.closest.game.name %></div>
-        <div class="mt-1 font-mono text-xs text-mute"><%= @stats.closest.reearned %> / <%= @stats.closest.total %> re-earned · <%= @stats.closest.left %> left</div>
+        <div class="mt-1 font-mono text-xs text-mute"><%= number_with_delimiter(@stats.closest.reearned) %> / <%= number_with_delimiter(@stats.closest.total) %> re-earned · <%= number_with_delimiter(@stats.closest.left) %> left</div>
       <% else %><div class="mt-1 text-mute">—</div><% end %>
     </div>
     <div class="rounded-xl border border-line bg-card p-5">
       <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Biggest gap</div>
       <% if @stats.biggest_gap %>
         <div class="mt-1 font-bold"><%= @stats.biggest_gap.game.name %></div>
-        <div class="mt-1 font-mono text-xs text-mute"><%= @stats.biggest_gap.reearned %> / <%= @stats.biggest_gap.total %> re-earned · from <%= @stats.biggest_gap.first_earned_labels.first %></div>
+        <div class="mt-1 font-mono text-xs text-mute"><%= number_with_delimiter(@stats.biggest_gap.reearned) %> / <%= number_with_delimiter(@stats.biggest_gap.total) %> re-earned · from <%= @stats.biggest_gap.first_earned_labels.first %></div>
       <% else %><div class="mt-1 text-mute">—</div><% end %>
     </div>
     <div class="rounded-xl border border-line bg-card p-5">
       <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Not owned on main</div>
-      <div class="mt-1 font-bold"><%= @stats.not_owned_count %> games</div>
+      <div class="mt-1 font-bold"><span class="font-mono"><%= number_with_delimiter(@stats.not_owned_count) %></span> games</div>
       <div class="mt-1 font-mono text-xs text-mute">need repurchase · <%= link_to "see Library", ownership_index_path, class: "text-link hover:text-linkh" %></div>
     </div>
   </div>
