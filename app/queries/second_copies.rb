@@ -6,10 +6,12 @@ class SecondCopies
   def self.transaction_ids
     owners = Entitlement.games.pluck(:name, :account_id)
                         .group_by { |name, _| MainOwnership.normalize(name) }
+                        .reject { |norm_name, _| norm_name.blank? }
                         .transform_values { |pairs| pairs.map(&:last).to_set }
     PsnTransaction.purchases.pluck(:id, :description, :account_id).filter_map { |id, desc, account_id|
-      other = owners[MainOwnership.normalize(desc)]
-      id if other && (other - [account_id]).any?
+      norm_desc = MainOwnership.normalize(desc)
+      other = owners[norm_desc]
+      id if norm_desc.present? && other && (other - [account_id]).any?
     }.to_set
   end
 end

@@ -22,6 +22,28 @@ RSpec.describe Sync::Transactions do
     expect(account.psn_transactions.find_by!(psn_transaction_id: "T3").kind).to eq("wallet")
   end
 
+  it "classifies subscription types as subscription kind" do
+    allow(store).to receive(:transactions).and_return([
+      psn_transaction(transaction_id: "T4", type: "SUBSCRIPTION"),
+      psn_transaction(transaction_id: "T5", type: "PS_PLUS_RECURRING")
+    ].lazy)
+
+    expect(described_class.call(account)).to eq(2)
+    expect(account.psn_transactions.find_by!(psn_transaction_id: "T4").kind).to eq("subscription")
+    expect(account.psn_transactions.find_by!(psn_transaction_id: "T5").kind).to eq("subscription")
+  end
+
+  it "classifies addon types as addon kind" do
+    allow(store).to receive(:transactions).and_return([
+      psn_transaction(transaction_id: "T6", type: "DLC"),
+      psn_transaction(transaction_id: "T7", type: "ADD_ON")
+    ].lazy)
+
+    expect(described_class.call(account)).to eq(2)
+    expect(account.psn_transactions.find_by!(psn_transaction_id: "T6").kind).to eq("addon")
+    expect(account.psn_transactions.find_by!(psn_transaction_id: "T7").kind).to eq("addon")
+  end
+
   it "is idempotent" do
     allow(store).to receive(:transactions).and_return([psn_transaction].lazy, [psn_transaction].lazy)
     described_class.call(account)

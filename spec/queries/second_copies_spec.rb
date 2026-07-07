@@ -15,4 +15,15 @@ RSpec.describe SecondCopies do
     expect(ids).to include(dup.id)
     expect(ids).not_to include(fresh.id, own_repurchase.id)
   end
+
+  it "does not match blank entitlement names or transaction descriptions" do
+    owner = create(:account)
+    buyer = create(:account, label: "Main")
+    create(:entitlement, account: owner, kind: "game", name: nil)
+    blank_txn = create(:psn_transaction, account: buyer, kind: "purchase", description: nil,
+                       psn_transaction_id: "blank")
+
+    ids = described_class.transaction_ids
+    expect(ids).not_to include(blank_txn.id)
+  end
 end
