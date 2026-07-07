@@ -33,9 +33,10 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# Design handoff bundle (extracted on demand, not source)
-PSN Trophy Comparison Tool.zip*
+/docs/superpowers/*
+
+# Superpowers plan documents (working artifacts, not source)
+docs/superpowers/
