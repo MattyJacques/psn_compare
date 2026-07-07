@@ -15,7 +15,7 @@ RSpec.describe "Accounts", type: :request do
     it "re-renders the form when the NPSSO is rejected" do
       allow(Accounts::Register).to receive(:call).and_raise(PSN::AuthenticationError, "rejected")
       post accounts_path, params: { account: { label: "Main", npsso: "bad" } }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("rejected")
     end
   end

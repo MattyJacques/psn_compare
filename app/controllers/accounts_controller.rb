@@ -14,11 +14,11 @@ class AccountsController < ApplicationController
   rescue PSN::AuthenticationError => e
     flash.now[:alert] = "PSN rejected the NPSSO token: #{e.message}"
     @label = params.dig(:account, :label)
-    render :new, status: :unprocessable_entity
+    render :new, status: :unprocessable_content
   rescue ActiveRecord::RecordInvalid => e
     flash.now[:alert] = e.message
     @label = params.dig(:account, :label)
-    render :new, status: :unprocessable_entity
+    render :new, status: :unprocessable_content
   end
 
   def destroy
