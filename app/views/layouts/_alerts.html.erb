@@ -1,7 +1,27 @@
-<%# Filled by error-states task %>
-<% if flash[:notice] %>
-  <p class="mb-4 rounded-lg border border-okline bg-okbg px-4 py-3 text-sm text-ok"><%= flash[:notice] %></p>
+<%= render "layouts/flash" %>
+
+<% Account.where(needs_reauth: true).find_each do |account| %>
+  <div class="mb-4 flex items-center gap-4 rounded-lg border border-warnline bg-warnbg px-4 py-3 text-sm"
+       data-controller="dismiss">
+    <span class="text-warn">▲</span>
+    <span class="flex-1 text-warnink">
+      <strong><%= account.label %> stopped syncing</strong> — its NPSSO token expired.
+      Trophy and purchase data is frozen at <%= mono_date(account.last_synced_at) %>.
+    </span>
+    <%= link_to "Re-link now", accounts_path, class: "rounded-lg border border-warnline bg-btnwarn px-3 py-1.5 font-bold text-warnink" %>
+    <button type="button" data-action="dismiss#hide" class="text-mute hover:text-ink2">✕</button>
+  </div>
 <% end %>
-<% if flash[:alert] %>
-  <p class="mb-4 rounded-lg border border-errline bg-errbg px-4 py-3 text-sm text-err"><%= flash[:alert] %></p>
+
+<% latest_run = SyncRun.order(created_at: :desc).first %>
+<% if latest_run&.status == "rate_limited" && latest_run.completed_at && latest_run.completed_at > 10.minutes.ago %>
+  <div class="fixed bottom-5 right-5 z-50 flex items-center gap-4 rounded-xl border border-line3 bg-card2 px-4 py-3 text-sm shadow-lg"
+       data-controller="dismiss">
+    <span class="text-warn">●</span>
+    <span>
+      <strong>Rate limited by PSN</strong>
+      <span class="block font-mono text-xs text-mute">429 · sync resumes automatically</span>
+    </span>
+    <button type="button" data-action="dismiss#hide" class="text-mute hover:text-ink2">Dismiss</button>
+  </div>
 <% end %>

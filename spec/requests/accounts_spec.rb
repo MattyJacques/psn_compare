@@ -21,6 +21,15 @@ RSpec.describe "Accounts", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("rejected")
     end
+
+    it "shows the rejection message on the bare first-run page with zero accounts" do
+      # Regression: the bare layout used to render no flash at all, so a
+      # rejected NPSSO on the very first link attempt showed no visible error.
+      allow(Accounts::Register).to receive(:call).and_raise(PSN::AuthenticationError, "rejected")
+      post accounts_path, params: { account: { label: "Main", npsso: "bad" } }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("rejected")
+    end
   end
 
   it "lists accounts with sync status and a reauth warning" do

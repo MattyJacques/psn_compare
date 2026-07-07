@@ -1,6 +1,29 @@
 <% if @main.nil? %>
   <p class="text-mute">No main account set — <%= link_to "choose one in Accounts", accounts_path, class: "text-link underline hover:text-linkh" %>.</p>
 <% else %>
+  <% first_syncing = @accounts.select { |a| a.last_synced_at.nil? && a.sync_runs.any? } %>
+  <% if first_syncing.any? %>
+    <div class="mb-10">
+      <h2 class="text-2xl font-extrabold tracking-[-0.03em]">Pulling your history…</h2>
+      <p class="mt-1 text-sm text-mute">PSN rate-limits bulk reads, so the first sync can take a while. Progress is saved as it goes.</p>
+      <div class="mt-4 space-y-2">
+        <% @accounts.each do |account| %>
+          <% run = account.sync_runs.order(created_at: :desc).first %>
+          <% state = account.last_synced_at ? "complete" : run&.status == "running" ? "syncing" : "waiting" %>
+          <div class="flex items-center gap-3 rounded-lg border p-4 text-sm
+                      <%= state == "syncing" ? "border-line3 bg-card2" : "border-line bg-card" %>
+                      <%= "opacity-60" if state == "waiting" %>">
+            <span class="<%= state == "complete" ? "text-ok" : state == "syncing" ? "text-accent" : "text-faint" %>">●</span>
+            <span class="font-bold"><%= account.label %></span>
+            <span class="font-mono text-xs text-mute">
+              <%= state == "complete" ? "done" : state == "syncing" ? "syncing #{run.kind} — #{run.items_synced} items" : "waiting" %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% progress = @stats.progress %>
   <div class="text-xs uppercase tracking-[0.08em] text-mute">Re-earned on <%= @main.label %></div>
 

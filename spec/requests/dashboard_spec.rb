@@ -20,4 +20,22 @@ RSpec.describe "Dashboard", type: :request do
     get root_path
     expect(response).to redirect_to(new_account_path)
   end
+
+  it "shows the expired-token banner and rate-limit toast" do
+    account = create(:account, current: true, label: "Matty_JPN", needs_reauth: true)
+    create(:sync_run, account:, kind: "trophies", status: "rate_limited",
+           error_message: "429", completed_at: 1.minute.ago)
+    get root_path
+    expect(response.body).to include("stopped syncing")
+    expect(response.body).to include("Re-link now")
+    expect(response.body).to include("Rate limited by PSN")
+  end
+
+  it "shows first-sync progress cards while an initial sync runs" do
+    account = create(:account, current: true, label: "Fresh", last_synced_at: nil)
+    create(:sync_run, account:, kind: "trophies", status: "running", started_at: Time.current)
+    get root_path
+    expect(response.body).to include("Pulling your history")
+    expect(response.body).to include("syncing")
+  end
 end

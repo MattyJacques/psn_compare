@@ -20,6 +20,7 @@
     <%= turbo_stream_from "sync_status" %>
     <% if @bare %>
       <main class="mx-auto flex min-h-screen max-w-[560px] flex-col justify-center px-6 py-16">
+        <%= render "layouts/flash" %>
         <%= yield %>
       </main>
     <% else %>
