@@ -1,5 +1,5 @@
 class PsnTransaction < ApplicationRecord
-  KINDS = %w[purchase refund wallet].freeze
+  KINDS = %w[purchase addon subscription refund wallet].freeze
 
   belongs_to :account
 
@@ -9,4 +9,7 @@ class PsnTransaction < ApplicationRecord
   scope :purchases, -> { where(kind: "purchase") }
   scope :refunds, -> { where(kind: "refund") }
   scope :wallet_funding, -> { where(kind: "wallet") }
+  scope :addons, -> { where(kind: "addon") }
+  scope :subscriptions, -> { where(kind: "subscription") }
+  scope :spend_kinds, -> { where(kind: %w[purchase addon subscription]) }
 end

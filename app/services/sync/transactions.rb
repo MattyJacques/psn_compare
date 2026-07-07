@@ -2,6 +2,8 @@ module Sync
   class Transactions
     REFUND_TYPES = /refund|chargeback/i
     WALLET_TYPES = /wallet|fund|deposit|top.?up/i
+    SUBSCRIPTION_TYPES = /subscription|ps.?plus|recurring/i
+    ADDON_TYPES = /add.?on|addon|dlc|iap|consumable/i
 
     def self.call(account) = new(account).call
 
@@ -31,6 +33,8 @@ module Sync
       case type
       when REFUND_TYPES then "refund"
       when WALLET_TYPES then "wallet"
+      when SUBSCRIPTION_TYPES then "subscription"
+      when ADDON_TYPES then "addon"
       else "purchase"
       end
     end
