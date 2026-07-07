@@ -25,7 +25,7 @@ class OwnershipMatrix
   end
 
   def self.count_for(counts, norm)
-    counts[norm] || counts.find { |k, _| norm.start_with?(k) }&.last
+    counts[norm] || counts.select { |k, _| norm.start_with?(k) }.max_by { |(k, _)| k.length }&.last
   end
   private_class_method :count_for
 end

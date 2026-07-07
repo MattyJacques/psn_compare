@@ -41,4 +41,29 @@ RSpec.describe OwnershipMatrix do
     row = described_class.call(main: main).find { |r| r.name == "Yakuza 0" }
     expect(row.reearn_count).to eq(1)
   end
+
+  it "prefers longest prefix match for re-earn candidate counts" do
+    main = create(:account, current: true)
+    alt = create(:account)
+    gravity = create(:game, name: "Gravity")
+    gravity_rush = create(:game, name: "Gravity Rush")
+
+    # Create 2 trophies for "Gravity" earned by alt
+    create(:account_trophy, account: alt, trophy: create(:trophy, game: gravity), earned: true)
+    create(:account_trophy, account: alt, trophy: create(:trophy, game: gravity), earned: true)
+
+    # Create 1 trophy for "Gravity Rush" earned by alt
+    create(:account_trophy, account: alt, trophy: create(:trophy, game: gravity_rush), earned: true)
+
+    # Create entitlements for both games on alt
+    create(:entitlement, account: alt, kind: "game", name: "Gravity")
+    create(:entitlement, account: alt, kind: "game", name: "Gravity Rush")
+
+    # Create entitlement named "Gravity Rush Remastered" that should match "Gravity Rush" (2-trophy count), not "Gravity" (1-trophy count)
+    create(:entitlement, account: alt, kind: "game", name: "Gravity Rush Remastered")
+
+    rows = described_class.call(main: main)
+    row = rows.find { |r| r.name == "Gravity Rush Remastered" }
+    expect(row.reearn_count).to eq(1)
+  end
 end
