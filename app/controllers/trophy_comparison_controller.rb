@@ -29,7 +29,7 @@ class TrophyComparisonController < ApplicationController
   end
 
   def counts
-    all = @game.trophies.includes(:skip).count
+    all = @rows.size
     { all:, missing: @rows.count(&:candidate),
       skipped: @rows.count { |r| r.trophy.skipped? },
       everywhere: @rows.count { |r| r.earned_by.size == @accounts.size && @accounts.any? } }

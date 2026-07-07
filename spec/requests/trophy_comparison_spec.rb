@@ -26,4 +26,11 @@ RSpec.describe "Trophy comparison", type: :request do
     expect(response.body).to include("Age of the Stars")
     expect(response.body).not_to include("Elden Lord")
   end
+
+  it "respects search in All chip count" do
+    get trophy_comparison_index_path(game_id: game.id, q: "Age")
+    expect(response.body).to include("All 1")
+    expect(response.body).to include("Age of the Stars")
+    expect(response.body).not_to include("Elden Lord")
+  end
 end
