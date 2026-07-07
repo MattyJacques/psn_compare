@@ -27,4 +27,17 @@ RSpec.describe "Purchases", type: :request do
     expect(response.body).to include("Persona 5 Royal")
     expect(response.body).not_to include("Stellar Blade")
   end
+
+  it "skips nil-currency totals from spend summaries" do
+    # Add a nil-currency purchase; with existing setup, only this would produce "40.00"
+    # when currency is nil, format_money renders without symbol
+    create(:psn_transaction, account: main, kind: "purchase", description: "Unknown Store",
+           amount_minor: 4000, currency: nil, occurred_at: Time.zone.parse("2026-05-15"),
+           psn_transaction_id: "nilcur")
+    get spend_index_path
+    expect(response).to be_successful
+    # The nil-currency amount should not leak into the summary; check transaction table
+    # doesn't render the nil-currency item (filtered by where.not(currency: nil))
+    expect(response.body).not_to include("Unknown Store")
+  end
 end

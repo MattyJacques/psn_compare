@@ -7,7 +7,7 @@ class SpendController < ApplicationController
     @lifetime = net_by_currency(PsnTransaction.all)
     @by_account = Account.order(current: :desc, label: :asc)
                          .map { |a| [a, net_by_currency(a.psn_transactions)] }
-    @transactions = filtered.order(occurred_at: :desc).includes(:account).limit(200)
+    @transactions = filtered.where.not(currency: nil).order(occurred_at: :desc).includes(:account).limit(200)
   end
 
   private
@@ -15,7 +15,7 @@ class SpendController < ApplicationController
   def net_by_currency(scope)
     spend = scope.spend_kinds.group(:currency).sum(:amount_minor)
     refunds = scope.refunds.group(:currency).sum(:amount_minor)
-    spend.merge(refunds.transform_values(&:-@)) { |_, s, r| s + r }.compact
+    spend.merge(refunds.transform_values(&:-@)) { |_, s, r| s + r }.except(nil)
   end
 
   def filtered
