@@ -30,4 +30,15 @@ RSpec.describe OwnershipMatrix do
     expect(described_class.call.map(&:name)).to eq(["Base Game"])
     expect(described_class.call(include_dlc: true).map(&:name)).to eq(["Base Game", "Season Pass"])
   end
+
+  it "annotates rows with re-earn candidate counts for the main account" do
+    main = create(:account, current: true)
+    alt = create(:account)
+    game = create(:game, name: "Yakuza 0")
+    create(:account_trophy, account: alt, trophy: create(:trophy, game:), earned: true)
+    create(:entitlement, account: alt, kind: "game", name: "Yakuza 0")
+
+    row = described_class.call(main: main).find { |r| r.name == "Yakuza 0" }
+    expect(row.reearn_count).to eq(1)
+  end
 end

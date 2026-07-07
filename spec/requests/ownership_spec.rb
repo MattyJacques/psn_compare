@@ -1,13 +1,13 @@
 require "rails_helper"
 
-RSpec.describe "Ownership", type: :request do
-  it "renders the matrix with duplicate highlighting" do
-    a = create(:account, label: "Main")
-    b = create(:account, label: "Alt")
-    create(:entitlement, account: a, name: "Astro Bot", product_id: "EP-ASTRO")
-    create(:entitlement, account: b, name: "Astro Bot", product_id: "EP-ASTRO")
-
+RSpec.describe "Library", type: :request do
+  it "renders the ownership matrix with legend and re-earn column" do
+    main = create(:account, current: true, label: "Hunter")
+    create(:entitlement, account: main, kind: "game", name: "Journey")
     get ownership_index_path
-    expect(response.body).to include("Astro Bot", "Main", "Alt", "Duplicate")
+    expect(response.body).to include("across")
+    expect(response.body).to include("To re-earn here")
+    expect(response.body).to include("Journey")
+    expect(response.body).to include("owned")
   end
 end
