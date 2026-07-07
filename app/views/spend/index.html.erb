@@ -1,42 +1,64 @@
-<h1 class="mb-6 text-2xl font-bold">Spend analysis</h1>
-
-<div class="grid gap-4 md:grid-cols-2">
-  <% @summaries.each do |account, totals| %>
-    <div class="rounded border p-4">
-      <h2 class="text-lg font-semibold"><%= account.label %></h2>
-      <% totals.each do |t| %>
-        <dl class="mt-2 text-sm text-gray-700">
-          <div>Net spend (<%= t.currency %>): <span class="font-medium"><%= format_money(t.net, t.currency) %></span></div>
-          <div>Purchases <%= format_money(t.purchases, t.currency) %> ·
-               Refunds <%= format_money(t.refunds, t.currency) %> ·
-               Wallet funding <%= format_money(t.wallet, t.currency) %></div>
-        </dl>
-        <table class="mt-2 text-sm">
-          <% t.by_year.each do |year, net| %>
-            <tr><td class="pr-4"><%= year %></td><td><%= format_money(net, t.currency) %></td></tr>
-          <% end %>
-        </table>
-      <% end %>
-    </div>
-  <% end %>
+<div class="text-xs uppercase tracking-[0.08em] text-mute">Lifetime spend · All accounts</div>
+<div class="mt-2 flex flex-wrap items-end gap-10">
+  <div class="font-mono text-[56px] font-extrabold leading-none tracking-[-0.04em] lg:text-[72px]">
+    <% if @lifetime.any? %>
+      <% currency, amount = @lifetime.max_by { |_, v| v } %>
+      <%= format_money(amount, currency) %>
+    <% else %>—<% end %>
+  </div>
+  <div class="flex flex-wrap gap-8 pb-2">
+    <% @by_account.each do |account, totals| %>
+      <div>
+        <div class="font-mono text-lg font-semibold">
+          <%= totals.any? ? totals.map { |cur, amt| format_money(amt, cur) }.join(" · ") : "—" %>
+        </div>
+        <div class="text-xs text-mute"><%= account.label %></div>
+      </div>
+    <% end %>
+  </div>
 </div>
 
-<h2 class="mb-2 mt-8 text-lg font-semibold">Biggest purchases</h2>
-<table class="min-w-full border text-sm">
-  <thead>
-    <tr class="bg-gray-100 text-left">
-      <th class="border p-2">Account</th><th class="border p-2">Date</th>
-      <th class="border p-2">Description</th><th class="border p-2">Amount</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @biggest.each do |txn| %>
+<div class="mt-8 flex flex-wrap gap-2">
+  <%= link_to "All accounts", spend_index_path, class: chip_classes(@filter.nil?) %>
+  <%= link_to "Games only", spend_index_path(filter: "games"), class: chip_classes(@filter == "games") %>
+  <%= link_to "Bought twice · #{@second_copy_ids.size}", spend_index_path(filter: "twice"), class: chip_classes(@filter == "twice") %>
+  <%= link_to "Refunds", spend_index_path(filter: "refunds"), class: chip_classes(@filter == "refunds") %>
+</div>
+
+<div class="mt-6 overflow-x-auto rounded-lg border border-line">
+  <table class="w-full min-w-[760px] text-left text-sm">
+    <thead class="bg-raise text-[11px] uppercase tracking-[0.08em] text-faint">
       <tr>
-        <td class="border p-2"><%= txn.account.label %></td>
-        <td class="border p-2"><%= txn.occurred_at&.to_date %></td>
-        <td class="border p-2"><%= txn.description %></td>
-        <td class="border p-2"><%= format_money(txn.amount_minor, txn.currency) %></td>
+        <th class="px-5 py-3 font-medium">Date</th>
+        <th class="px-5 py-3 font-medium">Item</th>
+        <th class="px-5 py-3 font-medium">Account</th>
+        <th class="px-5 py-3 font-medium">Type</th>
+        <th class="px-5 py-3 text-right font-medium">Amount</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @transactions.each do |txn| %>
+        <% second_copy = @second_copy_ids.include?(txn.id) %>
+        <tr class="border-t border-line2 <%= "bg-hilite" if second_copy %>">
+          <td class="px-5 py-3.5 font-mono text-xs text-mute"><%= mono_date(txn.occurred_at) %></td>
+          <td class="px-5 py-3.5 font-semibold">
+            <%= txn.description %>
+            <% if second_copy %>
+              <span class="ml-1 rounded bg-warnline px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-warn">2ND COPY</span>
+            <% end %>
+          </td>
+          <td class="px-5 py-3.5 font-mono text-xs text-mute"><%= txn.account.label %></td>
+          <td class="px-5 py-3.5 font-mono text-xs <%= { "wallet" => "text-link", "refund" => "text-err" }.fetch(txn.kind, "text-mute") %>">
+            <%= txn.kind == "addon" ? "add-on" : txn.kind %>
+          </td>
+          <td class="px-5 py-3.5 text-right font-mono text-[15px] <%= txn.kind == "wallet" ? "text-ok" : txn.kind == "refund" ? "text-err" : "" %>">
+            <% if txn.kind == "wallet" %>+<%= format_money(txn.amount_minor, txn.currency) %>
+            <% elsif txn.kind == "refund" %>−<%= format_money(txn.amount_minor, txn.currency) %>
+            <% else %><%= format_money(txn.amount_minor, txn.currency) %><% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<p class="mt-4 text-xs text-faint">Highlighted rows are re-purchases — games bought again on the main account for the re-earn run.</p>
