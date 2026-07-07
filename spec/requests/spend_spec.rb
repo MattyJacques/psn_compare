@@ -28,16 +28,14 @@ RSpec.describe "Purchases", type: :request do
     expect(response.body).not_to include("Stellar Blade")
   end
 
-  it "skips nil-currency totals from spend summaries" do
-    # Add a nil-currency purchase; with existing setup, only this would produce "40.00"
-    # when currency is nil, format_money renders without symbol
+  it "keeps nil-currency rows out of totals but still lists them in the ledger" do
     create(:psn_transaction, account: main, kind: "purchase", description: "Unknown Store",
-           amount_minor: 4000, currency: nil, occurred_at: Time.zone.parse("2026-05-15"),
+           amount_minor: 4321, currency: nil, occurred_at: Time.zone.parse("2026-05-15"),
            psn_transaction_id: "nilcur")
     get spend_index_path
     expect(response).to be_successful
-    # The nil-currency amount should not leak into the summary; check transaction table
-    # doesn't render the nil-currency item (filtered by where.not(currency: nil))
-    expect(response.body).not_to include("Unknown Store")
+    expect(response.body).to include("Unknown Store")
+    # amount appears once in the ledger row, but never as a hero/subtotal figure
+    expect(response.body.scan("43.21").size).to eq(1)
   end
 end

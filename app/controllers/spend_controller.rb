@@ -7,7 +7,7 @@ class SpendController < ApplicationController
     @lifetime = net_by_currency(PsnTransaction.all)
     @by_account = Account.order(current: :desc, label: :asc)
                          .map { |a| [a, net_by_currency(a.psn_transactions)] }
-    @transactions = filtered.where.not(currency: nil).order(occurred_at: :desc).includes(:account).limit(200)
+    @transactions = filtered.order(occurred_at: :desc).includes(:account).limit(200)
   end
 
   private
