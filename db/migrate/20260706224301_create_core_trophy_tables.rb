@@ -37,7 +37,7 @@ class CreateCoreTrophyTables < ActiveRecord::Migration[8.1]
       t.boolean :hidden, null: false, default: false
       t.string :icon_url
       t.timestamps
-      t.index [:game_id, :psn_trophy_id], unique: true
+      t.index [ :game_id, :psn_trophy_id ], unique: true
     end
 
     create_table :account_games do |t|
@@ -50,7 +50,7 @@ class CreateCoreTrophyTables < ActiveRecord::Migration[8.1]
       t.integer :earned_platinum, null: false, default: 0
       t.datetime :last_played_at
       t.timestamps
-      t.index [:account_id, :game_id], unique: true
+      t.index [ :account_id, :game_id ], unique: true
     end
 
     create_table :account_trophies do |t|
@@ -59,7 +59,7 @@ class CreateCoreTrophyTables < ActiveRecord::Migration[8.1]
       t.boolean :earned, null: false, default: false
       t.datetime :earned_at
       t.timestamps
-      t.index [:account_id, :trophy_id], unique: true
+      t.index [ :account_id, :trophy_id ], unique: true
     end
   end
 end

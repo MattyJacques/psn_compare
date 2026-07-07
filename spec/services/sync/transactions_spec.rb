@@ -45,7 +45,7 @@ RSpec.describe Sync::Transactions do
   end
 
   it "is idempotent" do
-    allow(store).to receive(:transactions).and_return([psn_transaction].lazy, [psn_transaction].lazy)
+    allow(store).to receive(:transactions).and_return([ psn_transaction ].lazy, [ psn_transaction ].lazy)
     described_class.call(account)
     described_class.call(account)
     expect(account.psn_transactions.count).to eq(1)

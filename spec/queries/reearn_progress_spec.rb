@@ -12,7 +12,7 @@ RSpec.describe ReearnProgress do
 
     before do
       # alt earned all three; main re-earned t1; t3 is skipped
-      [t1, t2, t3].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-05-01 10:00")) }
+      [ t1, t2, t3 ].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-05-01 10:00")) }
       create(:account_trophy, account: main, trophy: t1, earned: true, earned_at: Time.zone.parse("2024-03-14 21:47"))
       create(:trophy_skip, trophy: t3)
     end
@@ -31,7 +31,7 @@ RSpec.describe ReearnProgress do
       expect(gp.left).to eq(1)
       expect(gp.skipped).to eq(1)
       expect(gp.first_earned_labels).to include(alt.label)
-      expect(gp.missing.map { |m| [m.trophy, m.skipped] }).to eq([[t2, false], [t3, true]])
+      expect(gp.missing.map { |m| [ m.trophy, m.skipped ] }).to eq([ [ t2, false ], [ t3, true ] ])
       expect(gp.missing.first.first_earned_label).to eq(alt.label)
     end
   end
@@ -50,7 +50,7 @@ RSpec.describe ReearnProgress do
     b1 = create(:trophy, game: game_b)
     b2 = create(:trophy, game: game_b)
     b3 = create(:trophy, game: game_b)
-    [b1, b2, b3].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-05-01 10:00")) }
+    [ b1, b2, b3 ].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-05-01 10:00")) }
 
     # Game C: alt earned 1, main also earned it (left=0, complete)
     game_c = create(:game, name: "Game C")
@@ -59,7 +59,7 @@ RSpec.describe ReearnProgress do
     create(:account_trophy, account: main, trophy: c1, earned: true, earned_at: Time.zone.parse("2024-03-14 21:47"))
 
     result = described_class.call(main)
-    expect(result.games.map(&:game)).to eq([game_a, game_b, game_c])
+    expect(result.games.map(&:game)).to eq([ game_a, game_b, game_c ])
   end
 
   context "with empty baseline" do

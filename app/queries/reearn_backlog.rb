@@ -46,9 +46,9 @@ class ReearnBacklog
 
   def sorted(rows)
     if @sort == "rare"
-      rows.sort_by { |r| [r.rarity ? 0 : 1, r.rarity || 0] }
+      rows.sort_by { |r| [ r.rarity ? 0 : 1, r.rarity || 0 ] }
     else
-      rows.sort_by { |r| [r.rarity ? 0 : 1, -(r.rarity || 0)] }
+      rows.sort_by { |r| [ r.rarity ? 0 : 1, -(r.rarity || 0) ] }
     end
   end
 end

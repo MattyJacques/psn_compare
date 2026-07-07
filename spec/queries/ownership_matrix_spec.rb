@@ -10,7 +10,7 @@ RSpec.describe OwnershipMatrix do
     create(:entitlement, account: b, name: "Bloodborne", product_id: nil)
 
     rows = described_class.call
-    expect(rows.map(&:name)).to eq(["Astro Bot", "Bloodborne"])
+    expect(rows.map(&:name)).to eq([ "Astro Bot", "Bloodborne" ])
 
     astro = rows.first
     expect(astro.by_account_id.keys).to contain_exactly(a.id, b.id)
@@ -27,8 +27,8 @@ RSpec.describe OwnershipMatrix do
   it "excludes DLC unless asked for it" do
     create(:entitlement, account: a, name: "Base Game", kind: "game")
     create(:entitlement, account: a, name: "Season Pass", kind: "dlc")
-    expect(described_class.call.map(&:name)).to eq(["Base Game"])
-    expect(described_class.call(include_dlc: true).map(&:name)).to eq(["Base Game", "Season Pass"])
+    expect(described_class.call.map(&:name)).to eq([ "Base Game" ])
+    expect(described_class.call(include_dlc: true).map(&:name)).to eq([ "Base Game", "Season Pass" ])
   end
 
   it "annotates rows with re-earn candidate counts for the main account" do

@@ -12,7 +12,7 @@ class TrophyComparisonController < ApplicationController
 
     trophies = @game.trophies.includes(:skip).order(:psn_trophy_id)
     trophies = trophies.where("name LIKE ?", "%#{Trophy.sanitize_sql_like(@q)}%") if @q.present?
-    earned = AccountTrophy.where(trophy: trophies, earned: true).index_by { |at| [at.trophy_id, at.account_id] }
+    earned = AccountTrophy.where(trophy: trophies, earned: true).index_by { |at| [ at.trophy_id, at.account_id ] }
     @rows = trophies.map { |trophy| row_for(trophy, earned) }
     @counts = counts
     @rows = @rows.select { |r| visible?(r) }
@@ -23,7 +23,7 @@ class TrophyComparisonController < ApplicationController
   Row = Data.define(:trophy, :earned_by, :candidate) # earned_by: {account_id => AccountTrophy}
 
   def row_for(trophy, earned)
-    earned_by = @accounts.filter_map { |a| [a.id, earned[[trophy.id, a.id]]] if earned[[trophy.id, a.id]] }.to_h
+    earned_by = @accounts.filter_map { |a| [ a.id, earned[[ trophy.id, a.id ]] ] if earned[[ trophy.id, a.id ]] }.to_h
     candidate = @main && !trophy.skipped? && earned_by.any? && !earned_by.key?(@main.id)
     Row.new(trophy:, earned_by:, candidate:)
   end

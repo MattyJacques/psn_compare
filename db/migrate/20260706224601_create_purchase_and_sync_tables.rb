@@ -10,7 +10,7 @@ class CreatePurchaseAndSyncTables < ActiveRecord::Migration[8.1]
       t.string :platform
       t.datetime :acquired_at
       t.timestamps
-      t.index [:account_id, :entitlement_id], unique: true
+      t.index [ :account_id, :entitlement_id ], unique: true
       t.index :product_id
     end
 
@@ -24,7 +24,7 @@ class CreatePurchaseAndSyncTables < ActiveRecord::Migration[8.1]
       t.text :description
       t.string :payment_method
       t.timestamps
-      t.index [:account_id, :psn_transaction_id], unique: true
+      t.index [ :account_id, :psn_transaction_id ], unique: true
     end
 
     create_table :sync_runs do |t|
@@ -36,7 +36,7 @@ class CreatePurchaseAndSyncTables < ActiveRecord::Migration[8.1]
       t.datetime :started_at
       t.datetime :completed_at
       t.timestamps
-      t.index [:account_id, :kind, :created_at]
+      t.index [ :account_id, :kind, :created_at ]
     end
   end
 end

@@ -8,7 +8,7 @@ RSpec.describe "Re-earn checklist", type: :request do
 
   before do
     done = create(:trophy, game:)
-    [done, missing_trophy].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-08-02")) }
+    [ done, missing_trophy ].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-08-02")) }
     create(:account_trophy, account: main, trophy: done, earned: true, earned_at: Time.zone.parse("2024-01-11"))
   end
 

@@ -11,7 +11,7 @@ class SecondCopies
     PsnTransaction.purchases.pluck(:id, :description, :account_id).filter_map { |id, desc, account_id|
       norm_desc = MainOwnership.normalize(desc)
       other = owners[norm_desc]
-      id if norm_desc.present? && other && (other - [account_id]).any?
+      id if norm_desc.present? && other && (other - [ account_id ]).any?
     }.to_set
   end
 end

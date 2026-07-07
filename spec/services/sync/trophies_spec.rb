@@ -8,7 +8,7 @@ RSpec.describe Sync::Trophies do
 
   before do
     allow(client).to receive(:trophies).and_return(trophies_resource)
-    allow(trophies_resource).to receive(:titles).and_return([title].lazy)
+    allow(trophies_resource).to receive(:titles).and_return([ title ].lazy)
     allow(trophies_resource).to receive(:summary).and_return(psn_trophy_summary)
     allow(trophies_resource).to receive(:earned)
       .with(np_communication_id: "NPWR11111_00", platform: "PS5")
@@ -76,7 +76,7 @@ RSpec.describe Sync::Trophies do
     described_class.call(account)
 
     updated_title = psn_trophy_title(progress: 60, last_updated: "2024-06-01T10:00:00Z")
-    allow(trophies_resource).to receive(:titles).and_return([updated_title].lazy)
+    allow(trophies_resource).to receive(:titles).and_return([ updated_title ].lazy)
     described_class.call(account)
 
     expect(trophies_resource).to have_received(:earned).twice

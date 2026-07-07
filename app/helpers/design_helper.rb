@@ -10,7 +10,7 @@ module DesignHelper
   # "Matty_Hunter" -> "MH"; single-word labels use the first two letters.
   def initials(label)
     parts = label.to_s.split(/[_\s]+/)
-    (parts.size > 1 ? parts.first(2).map { |p| p[0] } : [label.to_s[0], label.to_s[1]]).join.upcase
+    (parts.size > 1 ? parts.first(2).map { |p| p[0] } : [ label.to_s[0], label.to_s[1] ]).join.upcase
   end
 
   def grade_border(trophy_type) = GRADE_BORDER.fetch(trophy_type, "border-line3")

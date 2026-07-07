@@ -23,7 +23,7 @@ class ReearnProgress
 
   def call
     games = earned_rows.group_by { |at| at.trophy.game }.map { |game, rows| game_progress(game, rows) }
-    games = games.sort_by { |gp| [gp.complete? ? 1 : 0, gp.left, gp.game.name.to_s.downcase] }
+    games = games.sort_by { |gp| [ gp.complete? ? 1 : 0, gp.left, gp.game.name.to_s.downcase ] }
     Result.new(total: games.sum(&:total), reearned: games.sum(&:reearned),
                skipped: games.sum(&:skipped), games:)
   end
@@ -56,6 +56,6 @@ class ReearnProgress
       first = earners.reject { |at| at.account_id == @main.id }.min_by { |at| at.earned_at || Time.current } || earners.first
       MissingTrophy.new(trophy:, first_earned_at: first&.earned_at,
                         first_earned_label: first&.account&.label, skipped: trophy.skipped?)
-    }.sort_by { |m| [m.skipped ? 1 : 0, m.trophy.id] }
+    }.sort_by { |m| [ m.skipped ? 1 : 0, m.trophy.id ] }
   end
 end

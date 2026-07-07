@@ -8,7 +8,7 @@ RSpec.describe "Trophy comparison", type: :request do
   before do
     earned = create(:trophy, game:, name: "Elden Lord")
     candidate = create(:trophy, game:, name: "Age of the Stars")
-    [earned, candidate].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-06-09 15:03")) }
+    [ earned, candidate ].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-06-09 15:03")) }
     create(:account_trophy, account: main, trophy: earned, earned: true, earned_at: Time.zone.parse("2024-03-14 21:47"))
   end
 

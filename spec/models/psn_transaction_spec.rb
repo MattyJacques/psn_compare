@@ -12,9 +12,9 @@ RSpec.describe PsnTransaction do
     purchase = create(:psn_transaction, account:, kind: "purchase")
     refund = create(:psn_transaction, account:, kind: "refund")
     wallet = create(:psn_transaction, account:, kind: "wallet")
-    expect(described_class.purchases).to eq([purchase])
-    expect(described_class.refunds).to eq([refund])
-    expect(described_class.wallet_funding).to eq([wallet])
+    expect(described_class.purchases).to eq([ purchase ])
+    expect(described_class.refunds).to eq([ refund ])
+    expect(described_class.wallet_funding).to eq([ wallet ])
   end
 
   it "supports addon and subscription kinds and a spend scope" do
