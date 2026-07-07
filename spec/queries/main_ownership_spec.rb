@@ -20,4 +20,9 @@ RSpec.describe MainOwnership do
     create(:account_game, account: create(:account), game:)
     expect(described_class.call(main).owned?(game)).to be false
   end
+
+  it "owns nothing when there is no main account" do
+    game = create(:game)
+    expect(described_class.call(nil).owned?(game)).to be false
+  end
 end
