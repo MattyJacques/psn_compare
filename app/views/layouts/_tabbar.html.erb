@@ -1,0 +1,13 @@
+<% tabs = [["Home", root_path, controller_name == "dashboard"],
+           ["Trophies", trophy_comparison_index_path, controller_name == "trophy_comparison"],
+           ["Checklist", reearn_path, controller_name == "reearn"],
+           ["Library", ownership_index_path, controller_name == "ownership"],
+           ["Accounts", accounts_path, controller_name == "accounts"]] %>
+<nav class="fixed inset-x-0 bottom-0 z-40 flex border-t border-line2 bg-rail lg:hidden">
+  <% tabs.each do |label, path, active| %>
+    <%= link_to path, class: "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2" do %>
+      <span class="size-5 rounded-md <%= active ? 'bg-accent' : 'bg-card' %>"></span>
+      <span class="text-[10px] <%= active ? 'font-bold text-navink' : 'text-mute' %>"><%= label %></span>
+    <% end %>
+  <% end %>
+</nav>

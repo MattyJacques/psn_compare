@@ -1,41 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html class="bg-page">
   <head>
-    <title><%= content_for(:title) || "Psn Compare" %></title>
+    <title><%= content_for(:title) || "RE:EARN" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Psn Compare">
-    <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
   </head>
 
-  <body>
-    <nav class="mb-8 border-b bg-gray-50">
-      <div class="mx-auto flex max-w-6xl gap-6 p-4 font-medium">
-        <%= link_to "Dashboard", root_path %>
-        <%= link_to "Re-earn", reearn_path %>
-        <%= link_to "Trophies", trophy_comparison_index_path %>
-        <%= link_to "Ownership", ownership_index_path %>
-        <%= link_to "Spend", spend_index_path %>
-        <%= link_to "Accounts", accounts_path %>
+  <body class="min-h-screen bg-page font-sans text-ink antialiased">
+    <%= turbo_stream_from "sync_status" %>
+    <% if @bare %>
+      <main class="mx-auto flex min-h-screen max-w-[560px] flex-col justify-center px-6 py-16">
+        <%= yield %>
+      </main>
+    <% else %>
+      <div class="flex min-h-screen">
+        <%= render "layouts/sidebar" %>
+        <main class="min-w-0 flex-1 px-5 pb-24 pt-6 lg:px-[52px] lg:py-11">
+          <%= render "layouts/alerts" %>
+          <%= yield %>
+        </main>
       </div>
-    </nav>
-    <main class="mx-auto max-w-6xl px-4">
-      <%= yield %>
-    </main>
+      <%= render "layouts/tabbar" %>
+    <% end %>
   </body>
 </html>

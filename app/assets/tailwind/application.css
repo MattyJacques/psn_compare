@@ -1,1 +1,53 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-page: #0B0E17;
+  --color-rail: #070B16;
+  --color-card: #0E1425;
+  --color-card2: #0E1730;
+  --color-raise: #10162A;
+  --color-line: #1A2138;
+  --color-line2: #141B30;
+  --color-line3: #1D2A4E;
+  --color-sel: #2C4488;
+  --color-ink: #EDF0F7;
+  --color-ink2: #C6D2EC;
+  --color-mute: #7C87A3;
+  --color-faint: #5B6B90;
+  --color-dash: #39415C;
+  --color-accent: #4C82F0;
+  --color-accent2: #3D6DE0;
+  --color-navbg: #14224A;
+  --color-navink: #D6E3FF;
+  --color-link: #6FA1FF;
+  --color-linkh: #9DBEFF;
+  --color-plat: #8FB6D9;
+  --color-gold-t: #E9C464;
+  --color-silver-t: #C3CBDA;
+  --color-bronze-t: #CE9469;
+  --color-ok: #5FBF7A;
+  --color-okbg: #0F2418;
+  --color-okline: #1E4A30;
+  --color-oktime: #3E8F5C;
+  --color-warn: #F0B45A;
+  --color-warnbg: #211A0D;
+  --color-warnline: #4A3A1E;
+  --color-warnink: #FFE9BD;
+  --color-btnwarn: #4A3A1E;
+  --color-err: #E88888;
+  --color-errbg: #1F1010;
+  --color-errline: #4A2626;
+  --color-hilite: #161327;
+  --color-skip: #8A96B4;
+  --color-skipline: #2A3352;
+  --color-btn: #1B2E63;
+  --color-btnh: #24398F;
+}
+
+/* Placeholder art tile: diagonal stripes, used when a PSN icon_url is missing */
+.stripe-tile {
+  background: repeating-linear-gradient(135deg, #141B30 0 4px, #0E1425 4px 8px);
+}
