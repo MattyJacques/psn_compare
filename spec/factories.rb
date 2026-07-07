@@ -63,4 +63,8 @@ FactoryBot.define do
     started_at { 5.minutes.ago }
     completed_at { 1.minute.ago }
   end
+
+  factory :trophy_skip do
+    trophy
+  end
 end

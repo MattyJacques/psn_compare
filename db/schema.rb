@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_06_224601) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_07_180415) do
   create_table "account_games", force: :cascade do |t|
     t.integer "account_id", null: false
     t.datetime "created_at", null: false
@@ -40,6 +40,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224601) do
   end
 
   create_table "accounts", force: :cascade do |t|
+    t.string "avatar_url"
     t.datetime "created_at", null: false
     t.boolean "current", default: false, null: false
     t.integer "earned_bronze", default: 0, null: false
@@ -125,10 +126,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224601) do
     t.string "icon_url"
     t.string "name"
     t.integer "psn_trophy_id", null: false
+    t.decimal "rarity_percent", precision: 5, scale: 2
     t.string "trophy_type", null: false
     t.datetime "updated_at", null: false
     t.index ["game_id", "psn_trophy_id"], name: "index_trophies_on_game_id_and_psn_trophy_id", unique: true
     t.index ["game_id"], name: "index_trophies_on_game_id"
+  end
+
+  create_table "trophy_skips", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "note"
+    t.integer "trophy_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["trophy_id"], name: "index_trophy_skips_on_trophy_id", unique: true
   end
 
   add_foreign_key "account_games", "accounts"
@@ -139,4 +149,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_06_224601) do
   add_foreign_key "psn_transactions", "accounts"
   add_foreign_key "sync_runs", "accounts"
   add_foreign_key "trophies", "games"
+  add_foreign_key "trophy_skips", "trophies"
 end

@@ -1,0 +1,8 @@
+<%# locals: trophy %>
+<% if trophy.skipped? %>
+  <%= button_to "undo", trophy_skip_path(trophy), method: :delete,
+        class: "font-mono text-xs text-skip underline hover:text-ink2" %>
+<% else %>
+  <%= button_to "won't earn", trophy_skip_path(trophy),
+        class: "rounded-md border border-skipline px-2 py-1 text-xs text-skip hover:border-line3 hover:text-ink2" %>
+<% end %>

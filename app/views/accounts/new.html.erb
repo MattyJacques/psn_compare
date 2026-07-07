@@ -1,21 +1,24 @@
-<h1 class="text-2xl font-bold mb-4">Add PSN account</h1>
-
-<% if flash[:alert] %>
-  <p class="mb-4 rounded bg-red-100 p-3 text-red-800"><%= flash[:alert] %></p>
-<% end %>
-
-<%= form_with url: accounts_path, scope: :account, class: "max-w-md space-y-4" do |f| %>
-  <div>
-    <%= f.label :label, "Label (e.g. Main, Old EU account)", class: "block font-medium" %>
-    <%= f.text_field :label, value: @label, required: true, class: "mt-1 w-full rounded border p-2" %>
+<span class="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent2 to-[#7B4DE0] text-lg font-extrabold">R</span>
+<h1 class="mt-6 text-3xl font-extrabold tracking-[-0.03em] lg:text-[40px]">Link your first PSN account</h1>
+<p class="mt-3 text-sm leading-relaxed text-mute">
+  RE:EARN pulls trophies, purchases and libraries from every account you link, then builds one
+  checklist: every trophy you've ever earned, re-earned on the account you choose.
+</p>
+<ol class="mt-6 space-y-2 text-sm">
+  <li><span class="mr-3 font-mono text-link">1</span>Sign in at playstation.com with the account to add</li>
+  <li><span class="mr-3 font-mono text-link">2</span>Open the ssocookie page and copy your NPSSO token</li>
+  <li><span class="mr-3 font-mono text-link">3</span>Paste it below — we keep only the rotating refresh token</li>
+</ol>
+<%= form_with url: accounts_path, scope: :account, class: "mt-6" do |f| %>
+  <%= f.text_field :label, value: @label, required: true, placeholder: "label (e.g. Matty_Hunter)",
+        class: "mb-2 w-full rounded-lg border border-line bg-card px-3 py-2.5 font-mono text-sm text-ink2 placeholder:text-faint" %>
+  <div class="flex gap-2">
+    <%= f.password_field :npsso, required: true, placeholder: "paste NPSSO token…",
+          class: "flex-1 rounded-lg border border-line bg-card px-3 py-2.5 font-mono text-sm text-ink2 placeholder:text-faint" %>
+    <%= f.submit "Link account", class: "cursor-pointer rounded-lg border border-sel bg-btn px-5 py-2.5 text-sm font-bold text-navink hover:bg-btnh" %>
   </div>
-  <div>
-    <%= f.label :npsso, "NPSSO token", class: "block font-medium" %>
-    <%= f.password_field :npsso, required: true, class: "mt-1 w-full rounded border p-2" %>
-    <p class="mt-1 text-sm text-gray-500">
-      Sign in at playstation.com, then visit
-      https://ca.account.sony.com/api/v1/ssocookie to get it. Used once, never stored.
-    </p>
-  </div>
-  <%= f.submit "Add account", class: "rounded bg-blue-600 px-4 py-2 text-white" %>
 <% end %>
+<p class="mt-4 text-xs text-faint">
+  Tokens last about two months.
+  <a href="https://ca.account.sony.com/api/v1/ssocookie" target="_blank" rel="noopener" class="text-link hover:text-linkh">Where do I find my NPSSO token?</a>
+</p>

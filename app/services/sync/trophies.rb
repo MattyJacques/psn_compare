@@ -54,7 +54,8 @@ module Sync
         trophy = game.trophies.find_or_initialize_by(psn_trophy_id: psn_trophy.id)
         trophy.update!(trophy_type: psn_trophy.grade.to_s, name: psn_trophy.name,
                        detail: psn_trophy.detail, hidden: psn_trophy.hidden,
-                       icon_url: psn_trophy.raw["trophyIconUrl"])
+                       icon_url: psn_trophy.raw["trophyIconUrl"],
+                       rarity_percent: psn_trophy.rarity)
         @account.account_trophies.find_or_initialize_by(trophy:)
                 .update!(earned: psn_trophy.earned?, earned_at: psn_trophy.earned_at)
       end
@@ -62,7 +63,9 @@ module Sync
 
     def update_account_summary(client)
       summary = client.trophies.summary
+      profile = client.profiles.find
       @account.update!(trophy_level: summary.level, last_synced_at: Time.current,
+                       avatar_url: profile.avatar_url,
                        **counts(:earned, summary.earned_counts))
     end
 

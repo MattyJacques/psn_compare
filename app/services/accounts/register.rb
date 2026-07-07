@@ -8,6 +8,7 @@ module Accounts
         online_id: profile.online_id,
         psn_account_id: profile.account_id,
         trophy_level: profile.trophy_summary&.level,
+        avatar_url: profile.avatar_url,
         refresh_token: client.refresh_token,
         current: !Account.exists?(current: true)
       )

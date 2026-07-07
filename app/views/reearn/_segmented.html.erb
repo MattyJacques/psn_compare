@@ -1,0 +1,7 @@
+<%# locals: active (:by_game | :backlog) %>
+<div class="flex rounded-lg border border-line bg-card p-0.5 text-[13px]">
+  <%= link_to "By game", reearn_path,
+        class: "rounded-md px-3 py-1.5 #{active == :by_game ? 'bg-navbg font-bold text-navink' : 'text-mute hover:text-ink2'}" %>
+  <%= link_to "Backlog", reearn_backlog_path,
+        class: "rounded-md px-3 py-1.5 #{active == :backlog ? 'bg-navbg font-bold text-navink' : 'text-mute hover:text-ink2'}" %>
+</div>

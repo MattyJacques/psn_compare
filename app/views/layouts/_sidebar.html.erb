@@ -1,0 +1,33 @@
+<% nav = [["Dashboard", root_path, controller_name == "dashboard"],
+          ["Trophies", trophy_comparison_index_path, controller_name == "trophy_comparison"],
+          ["Checklist", reearn_path, controller_name == "reearn"],
+          ["Library", ownership_index_path, controller_name == "ownership"],
+          ["Purchases", spend_index_path, controller_name == "spend"],
+          ["Accounts", accounts_path, controller_name == "accounts"]] %>
+<% error_count = Account.where(needs_reauth: true).count %>
+<aside class="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line2 bg-rail lg:flex">
+  <div class="flex items-center gap-2.5 px-5 pb-8 pt-6">
+    <span class="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-accent2 to-[#7B4DE0] text-[13px] font-extrabold">R</span>
+    <span class="text-[15px] font-extrabold tracking-tight">RE:EARN</span>
+  </div>
+  <nav class="flex flex-col gap-1 px-3">
+    <% nav.each do |label, path, active| %>
+      <%= link_to path,
+            class: "flex items-center justify-between rounded-[7px] px-2.5 py-[9px] text-[13.5px] #{active ? 'bg-navbg font-bold text-navink' : 'text-mute hover:bg-card2 hover:text-ink2'}" do %>
+        <span><%= label %></span>
+        <% if label == "Accounts" && error_count.positive? %>
+          <span class="font-mono text-xs text-warn">·<%= error_count %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </nav>
+  <div class="mt-auto border-t border-line2 px-5 py-4">
+    <div class="text-[11px] uppercase tracking-[0.08em] text-faint">Last sync</div>
+    <% total = Account.count %>
+    <% healthy = total - error_count %>
+    <div class="mt-1 font-mono text-xs <%= error_count.positive? ? 'text-warn' : 'text-oktime' %>">
+      <% if error_count.positive? %>▲ <%= healthy %>/<%= total %> accounts · <%= error_count %> error<%= "s" if error_count > 1 %>
+      <% else %>● <%= relative_sync(Account.maximum(:last_synced_at)) %> · <%= total %>/<%= total %><% end %>
+    </div>
+  </div>
+</aside>

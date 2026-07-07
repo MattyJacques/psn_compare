@@ -1,0 +1,6 @@
+<% if flash[:notice] %>
+  <p class="mb-4 rounded-lg border border-okline bg-okbg px-4 py-3 text-sm text-ok"><%= flash[:notice] %></p>
+<% end %>
+<% if flash[:alert] %>
+  <p class="mb-4 rounded-lg border border-errline bg-errbg px-4 py-3 text-sm text-err"><%= flash[:alert] %></p>
+<% end %>
