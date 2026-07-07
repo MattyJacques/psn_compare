@@ -25,4 +25,6 @@ Rails.application.routes.draw do
   resources :trophy_comparison, only: :index
 
   get "reearn", to: "reearn#show"
+  post "trophies/:trophy_id/skip", to: "trophy_skips#create", as: :trophy_skip
+  delete "trophies/:trophy_id/skip", to: "trophy_skips#destroy"
 end
