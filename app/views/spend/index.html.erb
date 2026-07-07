@@ -1,0 +1,42 @@
+<h1 class="mb-6 text-2xl font-bold">Spend analysis</h1>
+
+<div class="grid gap-4 md:grid-cols-2">
+  <% @summaries.each do |account, totals| %>
+    <div class="rounded border p-4">
+      <h2 class="text-lg font-semibold"><%= account.label %></h2>
+      <% totals.each do |t| %>
+        <dl class="mt-2 text-sm text-gray-700">
+          <div>Net spend (<%= t.currency %>): <span class="font-medium"><%= format_money(t.net, t.currency) %></span></div>
+          <div>Purchases <%= format_money(t.purchases, t.currency) %> ·
+               Refunds <%= format_money(t.refunds, t.currency) %> ·
+               Wallet funding <%= format_money(t.wallet, t.currency) %></div>
+        </dl>
+        <table class="mt-2 text-sm">
+          <% t.by_year.each do |year, net| %>
+            <tr><td class="pr-4"><%= year %></td><td><%= format_money(net, t.currency) %></td></tr>
+          <% end %>
+        </table>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<h2 class="mb-2 mt-8 text-lg font-semibold">Biggest purchases</h2>
+<table class="min-w-full border text-sm">
+  <thead>
+    <tr class="bg-gray-100 text-left">
+      <th class="border p-2">Account</th><th class="border p-2">Date</th>
+      <th class="border p-2">Description</th><th class="border p-2">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @biggest.each do |txn| %>
+      <tr>
+        <td class="border p-2"><%= txn.account.label %></td>
+        <td class="border p-2"><%= txn.occurred_at&.to_date %></td>
+        <td class="border p-2"><%= txn.description %></td>
+        <td class="border p-2"><%= format_money(txn.amount_minor, txn.currency) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

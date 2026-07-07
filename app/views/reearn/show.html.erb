@@ -1,0 +1,52 @@
+<h1 class="mb-2 text-2xl font-bold">Re-earn tracker</h1>
+
+<% if @current_account.nil? %>
+  <p class="text-gray-600">No current account set —
+    <%= link_to "choose one on the accounts page", accounts_path, class: "text-blue-600 underline" %>.
+  </p>
+<% else %>
+  <p class="mb-4 text-gray-600">
+    Re-earning every trophy ever earned on any account, as <span class="font-medium"><%= @current_account.label %></span>.
+  </p>
+
+  <div class="mb-8 rounded border p-4">
+    <div class="text-3xl font-bold"><%= @result.percent %>%</div>
+    <div class="text-gray-600"><%= @result.reearned %> of <%= @result.total %> trophies re-earned</div>
+    <div class="mt-2 h-3 w-full rounded bg-gray-200">
+      <div class="h-3 rounded bg-blue-600" style="width: <%= @result.percent %>%"></div>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <% @result.games.each do |gp| %>
+      <details class="rounded border p-4 <%= "opacity-60" if gp.complete? %>">
+        <summary class="cursor-pointer">
+          <span class="font-semibold"><%= gp.game.name %></span>
+          <span class="text-gray-500"><%= gp.game.platform %></span>
+          <span class="ml-2"><%= gp.reearned %>/<%= gp.total %> (<%= gp.percent %>%)</span>
+          <% if gp.complete? %><span class="ml-2 rounded bg-green-100 px-2 py-0.5 text-sm text-green-800">Complete</span><% end %>
+        </summary>
+        <table class="mt-3 min-w-full text-sm">
+          <% earned_rows = (@earned_by_game[gp.game.id] || []).group_by(&:trophy_id) %>
+          <% gp.game.trophies.order(:psn_trophy_id).each do |trophy| %>
+            <% rows = earned_rows[trophy.id] || [] %>
+            <% next if rows.empty? %>
+            <% mine = rows.find { |at| at.account_id == @current_account.id } %>
+            <tr class="border-t">
+              <td class="p-2"><%= mine ? "✅" : "⬜" %></td>
+              <td class="p-2">
+                <div class="font-medium"><%= trophy.name %></div>
+                <div class="text-gray-500"><%= trophy.detail %></div>
+              </td>
+              <td class="p-2 text-gray-600"><%= trophy.trophy_type %></td>
+              <td class="p-2 text-gray-500">
+                first earned by <%= rows.min_by { |at| at.earned_at || Time.current }&.account&.label %>
+                <% if mine&.earned_at %> · re-earned <%= mine.earned_at.to_date %><% end %>
+              </td>
+            </tr>
+          <% end %>
+        </table>
+      </details>
+    <% end %>
+  </div>
+<% end %>

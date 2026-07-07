@@ -1,0 +1,44 @@
+<h1 class="mb-6 text-2xl font-bold">Trophy comparison</h1>
+
+<% summary_cols = { 1 => "md:grid-cols-1", 2 => "md:grid-cols-2", 3 => "md:grid-cols-3" }.fetch([@accounts.size, 4].min, "md:grid-cols-4") %>
+<div class="mb-6 grid gap-4 <%= summary_cols %>">
+  <% @accounts.each do |account| %>
+    <div class="rounded border p-3 text-sm">
+      <div class="font-semibold"><%= account.label %></div>
+      <div>Level <%= account.trophy_level || "—" %></div>
+      <div><%= account.earned_platinum %>P · <%= account.earned_gold %>G ·
+           <%= account.earned_silver %>S · <%= account.earned_bronze %>B</div>
+    </div>
+  <% end %>
+</div>
+
+<div class="overflow-x-auto">
+  <table class="min-w-full border text-sm">
+    <thead>
+      <tr class="bg-gray-100 text-left">
+        <th class="border p-2">Game</th>
+        <th class="border p-2">Platform</th>
+        <% @accounts.each do |account| %>
+          <th class="border p-2"><%= account.label %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @games.each do |game| %>
+        <% by_account = game.account_games.index_by(&:account_id) %>
+        <tr>
+          <td class="border p-2"><%= game.name %></td>
+          <td class="border p-2"><%= game.platform %></td>
+          <% @accounts.each do |account| %>
+            <td class="border p-2">
+              <% if (ag = by_account[account.id]) %>
+                <span class="font-medium"><%= ag.progress %>%</span>
+                <span class="text-gray-500"><%= ag.earned_platinum %>P/<%= ag.earned_gold %>G/<%= ag.earned_silver %>S/<%= ag.earned_bronze %>B</span>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
