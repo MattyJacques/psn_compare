@@ -4,6 +4,9 @@ class AccountsController < ApplicationController
   end
 
   def new
+    redirect_to accounts_path and return if Account.exists?
+
+    @bare = true
     @label = nil
   end
 
@@ -14,10 +17,12 @@ class AccountsController < ApplicationController
   rescue PSN::AuthenticationError => e
     flash.now[:alert] = "PSN rejected the NPSSO token: #{e.message}"
     @label = params.dig(:account, :label)
+    @bare = Account.none?
     render :new, status: :unprocessable_content
   rescue ActiveRecord::RecordInvalid => e
     flash.now[:alert] = e.message
     @label = params.dig(:account, :label)
+    @bare = Account.none?
     render :new, status: :unprocessable_content
   end
 

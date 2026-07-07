@@ -13,6 +13,9 @@ RSpec.describe "Accounts", type: :request do
     end
 
     it "re-renders the form when the NPSSO is rejected" do
+      # Non-bare path: an existing account keeps @bare false so the flash
+      # (rendered by layouts/alerts, not yet wired into the bare layout) shows.
+      create(:account)
       allow(Accounts::Register).to receive(:call).and_raise(PSN::AuthenticationError, "rejected")
       post accounts_path, params: { account: { label: "Main", npsso: "bad" } }
       expect(response).to have_http_status(:unprocessable_content)
@@ -24,7 +27,7 @@ RSpec.describe "Accounts", type: :request do
     account = create(:account, label: "Main", online_id: "matty", needs_reauth: true)
     create(:sync_run, account:, kind: "trophies", status: "failed", error_message: "boom")
     get accounts_path
-    expect(response.body).to include("Main", "matty", "Needs re-authentication", "boom")
+    expect(response.body).to include("Main", "NPSSO token expired", "boom")
   end
 
   it "queues a sync" do
@@ -47,5 +50,32 @@ RSpec.describe "Accounts", type: :request do
     patch reauth_account_path(account), params: { npsso: "fresh" }
     expect(account).to have_received(:reauthenticate!).with("fresh")
     expect(response).to redirect_to(accounts_path)
+  end
+
+  describe "redesigned index" do
+    it "shows account cards with roles and the link panel" do
+      create(:account, current: true, label: "Matty_Hunter")
+      create(:account, label: "Matty_JPN", needs_reauth: true)
+      get accounts_path
+      expect(response.body).to include("2 linked")
+      expect(response.body).to include("MAIN — re-earn target")
+      expect(response.body).to include("Re-link now")
+      expect(response.body).to include("Link a new account")
+      expect(response.body).to include("Sync schedule")
+    end
+  end
+
+  describe "first run" do
+    it "renders the bare first-run page when no accounts exist" do
+      get new_account_path
+      expect(response.body).to include("Link your first PSN account")
+      expect(response.body).not_to include("Dashboard") # no sidebar
+    end
+
+    it "redirects new to index once accounts exist" do
+      create(:account)
+      get new_account_path
+      expect(response).to redirect_to(accounts_path)
+    end
   end
 end

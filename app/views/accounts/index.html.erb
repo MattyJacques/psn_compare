@@ -1,57 +1,67 @@
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-2xl font-bold">Accounts</h1>
-  <%= link_to "Add account", new_account_path, class: "rounded bg-blue-600 px-4 py-2 text-white" %>
-</div>
+<div class="text-xs uppercase tracking-[0.08em] text-mute">Accounts</div>
+<h1 class="mt-1 text-3xl font-extrabold tracking-[-0.03em] lg:text-[40px]"><%= @accounts.size %> linked</h1>
 
-<div class="space-y-4">
-  <% @accounts.each do |account| %>
-    <div class="rounded border p-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <span class="text-lg font-semibold"><%= account.label %></span>
-          <span class="text-gray-500"><%= account.online_id %></span>
-          <% if account.current? %>
-            <span class="ml-2 rounded bg-blue-100 px-2 py-0.5 text-sm text-blue-800">Current</span>
-          <% end %>
-          <% if account.needs_reauth? %>
-            <span class="ml-2 rounded bg-red-100 px-2 py-0.5 text-sm text-red-800">Needs re-authentication</span>
-          <% end %>
+<div class="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
+  <div class="space-y-3">
+    <% @accounts.each do |account| %>
+      <% card = account.needs_reauth? ? "border-warnline bg-warnbg" : account.current? ? "border-sel bg-card2" : "border-line bg-card" %>
+      <div class="rounded-xl border <%= card %> p-5">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-navbg font-mono text-sm font-semibold text-navink">
+            <% if account.avatar_url %><%= image_tag account.avatar_url, class: "size-full object-cover", alt: "" %>
+            <% else %><%= initials(account.label) %><% end %>
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 font-bold">
+              <%= account.label %>
+              <% if account.current? %>
+                <span class="text-[10px] font-bold tracking-wide text-link">MAIN — re-earn target</span>
+              <% end %>
+            </div>
+            <div class="mt-1 font-mono text-xs <%= account.needs_reauth? ? "text-warn" : "text-oktime" %>">
+              <% if account.needs_reauth? %>▲ NPSSO token expired — re-link to keep syncing
+              <% else %>● token healthy · refreshes automatically<% end %>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 text-[13px]">
+            <% if account.needs_reauth? %>
+              <span class="rounded-lg border border-warnline bg-btnwarn px-3 py-1.5 font-bold text-warnink">Re-link below</span>
+            <% else %>
+              <span class="font-mono text-xs text-faint">synced <%= relative_sync(account.last_synced_at) %></span>
+              <%= button_to "Sync now", sync_account_path(account), class: "text-link hover:text-linkh" %>
+              <% unless account.current? %>
+                <%= button_to "Set as main", make_current_account_path(account), method: :patch, class: "text-link hover:text-linkh" %>
+              <% end %>
+            <% end %>
+            <%= button_to "Unlink", account_path(account), method: :delete,
+                  data: { turbo_confirm: "Remove #{account.label} and all its synced data?" },
+                  class: "text-mute hover:text-err" %>
+          </div>
         </div>
-        <div class="flex gap-2">
-          <%= button_to "Sync now", sync_account_path(account), class: "rounded bg-gray-200 px-3 py-1" %>
-          <% unless account.current? %>
-            <%= button_to "Make current", make_current_account_path(account), method: :patch,
-                          class: "rounded bg-gray-200 px-3 py-1" %>
+        <% if account.needs_reauth? %>
+          <%= form_with url: reauth_account_path(account), method: :patch, class: "mt-4 flex gap-2" do |f| %>
+            <%= f.password_field :npsso, placeholder: "fresh NPSSO token…", required: true,
+                  class: "flex-1 rounded-lg border border-warnline bg-card px-3 py-2 font-mono text-sm text-ink2 placeholder:text-faint" %>
+            <%= f.submit "Re-link now", class: "cursor-pointer rounded-lg border border-warnline bg-btnwarn px-4 py-2 text-sm font-bold text-warnink" %>
           <% end %>
-          <%= button_to "Remove", account_path(account), method: :delete,
-                        data: { turbo_confirm: "Remove #{account.label} and all its synced data?" },
-                        class: "rounded bg-red-100 px-3 py-1 text-red-800" %>
+        <% end %>
+        <div class="mt-3 flex flex-wrap gap-4 font-mono text-xs text-faint">
+          <% account.sync_runs.latest_per_kind.each do |kind, run| %>
+            <span><%= kind %>: <%= run.status %><%= " — #{run.error_message}" if run.error_message.present? %></span>
+          <% end %>
         </div>
       </div>
+    <% end %>
+  </div>
 
-      <% if account.needs_reauth? %>
-        <%= form_with url: reauth_account_path(account), method: :patch, class: "mt-3 flex gap-2" do |f| %>
-          <%= f.password_field :npsso, placeholder: "Fresh NPSSO token", required: true,
-                               class: "w-96 rounded border p-2" %>
-          <%= f.submit "Re-authenticate", class: "rounded bg-blue-600 px-4 py-2 text-white" %>
-        <% end %>
-      <% end %>
-
-      <dl class="mt-3 grid grid-cols-4 gap-2 text-sm text-gray-600">
-        <div>Level <%= account.trophy_level || "—" %></div>
-        <div>Last synced <%= account.last_synced_at ? time_ago_in_words(account.last_synced_at) + " ago" : "never" %></div>
-      </dl>
-
-      <div class="mt-2 text-sm">
-        <% account.sync_runs.latest_per_kind.each do |kind, run| %>
-          <span class="mr-4">
-            <%= kind %>: <span class="font-medium"><%= run.status %></span>
-            <% if run.error_message.present? %>
-              <span class="text-red-700">(<%= run.error_message %>)</span>
-            <% end %>
-          </span>
-        <% end %>
+  <div class="space-y-4">
+    <%= render "link_panel" %>
+    <div class="rounded-xl border border-line bg-card p-5">
+      <h3 class="text-sm font-bold">Sync schedule</h3>
+      <div class="mt-2 font-mono text-xs leading-relaxed text-mute">
+        every 30 min · trophies + purchases<br>
+        rate-limit aware · retries after 429
       </div>
     </div>
-  <% end %>
+  </div>
 </div>
