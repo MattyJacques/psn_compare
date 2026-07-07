@@ -1,44 +1,85 @@
-<h1 class="mb-6 text-2xl font-bold">Trophy comparison</h1>
-
-<% summary_cols = { 1 => "md:grid-cols-1", 2 => "md:grid-cols-2", 3 => "md:grid-cols-3" }.fetch([@accounts.size, 4].min, "md:grid-cols-4") %>
-<div class="mb-6 grid gap-4 <%= summary_cols %>">
-  <% @accounts.each do |account| %>
-    <div class="rounded border p-3 text-sm">
-      <div class="font-semibold"><%= account.label %></div>
-      <div>Level <%= account.trophy_level || "—" %></div>
-      <div><%= account.earned_platinum %>P · <%= account.earned_gold %>G ·
-           <%= account.earned_silver %>S · <%= account.earned_bronze %>B</div>
+<% if @game.nil? %>
+  <p class="text-mute">No synced games yet.</p>
+<% else %>
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <div class="text-xs uppercase tracking-[0.08em] text-mute">Trophy comparison</div>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-[-0.03em] lg:text-[40px]"><%= @game.name %></h1>
     </div>
-  <% end %>
-</div>
+    <div class="flex gap-2">
+      <%= form_with url: trophy_comparison_index_path, method: :get, data: { controller: "autosubmit" } do %>
+        <%= select_tag :game_id, options_from_collection_for_select(@games, :id, :name, @game.id),
+              class: "rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink2",
+              data: { action: "change->autosubmit#submit" } %>
+      <% end %>
+      <%= form_with url: trophy_comparison_index_path, method: :get, data: { controller: "autosubmit" } do %>
+        <%= hidden_field_tag :game_id, @game.id %>
+        <%= text_field_tag :q, @q, placeholder: "Search trophies…",
+              class: "w-40 rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink2 placeholder:text-faint",
+              data: { action: "change->autosubmit#submit" } %>
+      <% end %>
+    </div>
+  </div>
 
-<div class="overflow-x-auto">
-  <table class="min-w-full border text-sm">
-    <thead>
-      <tr class="bg-gray-100 text-left">
-        <th class="border p-2">Game</th>
-        <th class="border p-2">Platform</th>
-        <% @accounts.each do |account| %>
-          <th class="border p-2"><%= account.label %></th>
-        <% end %>
-      </tr>
-    </thead>
-    <tbody>
-      <% @games.each do |game| %>
-        <% by_account = game.account_games.index_by(&:account_id) %>
+  <% chips = [["All #{@counts[:all]}", nil], ["Missing on main · #{@counts[:missing]}", "missing"],
+              ["Skipped · #{@counts[:skipped]}", "skipped"], ["Earned everywhere · #{@counts[:everywhere]}", "everywhere"]] %>
+  <div class="mt-6 flex flex-wrap gap-2">
+    <% chips.each do |label, value| %>
+      <%= link_to label, trophy_comparison_index_path(game_id: @game.id, filter: value, q: @q.presence),
+            class: chip_classes(@filter == value) %>
+    <% end %>
+  </div>
+
+  <div class="mt-6 overflow-x-auto rounded-lg border border-line">
+    <table class="w-full min-w-[900px] text-left text-sm">
+      <thead class="bg-raise text-[11px] uppercase tracking-[0.08em] text-faint">
         <tr>
-          <td class="border p-2"><%= game.name %></td>
-          <td class="border p-2"><%= game.platform %></td>
+          <th class="px-5 py-3 font-medium">Trophy</th>
           <% @accounts.each do |account| %>
-            <td class="border p-2">
-              <% if (ag = by_account[account.id]) %>
-                <span class="font-medium"><%= ag.progress %>%</span>
-                <span class="text-gray-500"><%= ag.earned_platinum %>P/<%= ag.earned_gold %>G/<%= ag.earned_silver %>S/<%= ag.earned_bronze %>B</span>
-              <% end %>
-            </td>
+            <th class="px-5 py-3 font-medium <%= "font-bold text-ink2" if account.current? %>">
+              <%= account.label %><%= " · main" if account.current? %>
+            </th>
           <% end %>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <% trophy = row.trophy %>
+          <tr class="border-t border-line2 <%= "bg-hilite" if row.candidate %>">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <span class="size-[26px] shrink-0 rounded-md border-2 <%= grade_border(trophy.trophy_type) %> <%= trophy.skipped? ? "opacity-45" : "" %> overflow-hidden">
+                  <% if trophy.icon_url %><%= image_tag trophy.icon_url, class: "size-full object-cover", alt: "" %>
+                  <% else %><span class="stripe-tile block size-full"></span><% end %>
+                </span>
+                <span class="font-semibold <%= "text-faint line-through" if trophy.skipped? %>"><%= trophy.name %></span>
+                <% if trophy.skipped? %>
+                  <span class="rounded border border-skipline px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-skip">WON'T EARN</span>
+                  <%= render "reearn/skip_button", trophy: %>
+                <% elsif row.candidate %>
+                  <span class="rounded bg-warnline px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-warn">RE-EARN</span>
+                  <%= render "reearn/skip_button", trophy: %>
+                <% end %>
+              </div>
+            </td>
+            <% @accounts.each do |account| %>
+              <% at = row.earned_by[account.id] %>
+              <td class="px-5 py-4 font-mono text-[13px]">
+                <% if at.nil? %>
+                  <span class="text-dash">—</span>
+                <% elsif account.current? %>
+                  <span class="inline-block rounded-md border border-okline bg-okbg px-2 py-1 text-ok">✓ <%= mono_date(at.earned_at) %></span>
+                  <div class="mt-0.5 text-xs text-oktime"><%= mono_time(at.earned_at) %></div>
+                <% else %>
+                  <span class="text-ok"><%= mono_date(at.earned_at) %></span>
+                  <div class="text-xs text-mute"><%= mono_time(at.earned_at) %></div>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-4 text-xs text-faint">Highlighted rows are re-earn candidates: earned on another account, still missing on <%= @main&.label || "the main account" %>.</p>
+<% end %>

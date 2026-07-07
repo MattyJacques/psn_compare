@@ -1,15 +1,29 @@
 require "rails_helper"
 
 RSpec.describe "Trophy comparison", type: :request do
-  it "shows each game once with per-account progress" do
-    a = create(:account, label: "Main")
-    b = create(:account, label: "Alt")
-    game = create(:game, name: "Astro Bot")
-    create(:account_game, account: a, game:, progress: 100, earned_platinum: 1)
-    create(:account_game, account: b, game:, progress: 40)
+  let(:main) { create(:account, current: true, label: "Matty_Hunter") }
+  let(:alt) { create(:account, label: "Matty_JPN") }
+  let(:game) { create(:game, name: "Elden Ring") }
 
-    get trophy_comparison_index_path
-    expect(response.body).to include("Astro Bot", "Main", "Alt", "100%", "40%")
-    expect(response.body.scan("Astro Bot").size).to eq(1)
+  before do
+    earned = create(:trophy, game:, name: "Elden Lord")
+    candidate = create(:trophy, game:, name: "Age of the Stars")
+    [earned, candidate].each { |t| create(:account_trophy, account: alt, trophy: t, earned: true, earned_at: Time.zone.parse("2022-06-09 15:03")) }
+    create(:account_trophy, account: main, trophy: earned, earned: true, earned_at: Time.zone.parse("2024-03-14 21:47"))
+  end
+
+  it "renders the per-trophy matrix with re-earn highlighting" do
+    get trophy_comparison_index_path(game_id: game.id)
+    expect(response.body).to include("Elden Ring")
+    expect(response.body).to include("Matty_Hunter · main")
+    expect(response.body).to include("RE-EARN")
+    expect(response.body).to include("14 Mar 2024")
+    expect(response.body).to include("21:47")
+  end
+
+  it "filters to missing-on-main" do
+    get trophy_comparison_index_path(game_id: game.id, filter: "missing")
+    expect(response.body).to include("Age of the Stars")
+    expect(response.body).not_to include("Elden Lord")
   end
 end
