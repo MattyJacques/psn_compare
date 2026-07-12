@@ -17,7 +17,10 @@
   </head>
 
   <body class="min-h-screen bg-page font-sans text-ink antialiased">
-    <%= turbo_stream_from "sync_status" %>
+    <%# data-turbo-permanent: recreating this element each Turbo visit races the
+        old element's unsubscribe against the new one's subscribe (identical cable
+        identifier), which can leave the page silently unsubscribed. %>
+    <%= turbo_stream_from "sync_status", id: "sync-status-stream", data: { turbo_permanent: "" } %>
     <% if @bare %>
       <main class="mx-auto flex min-h-screen max-w-[560px] flex-col justify-center px-6 py-16">
         <%= render "layouts/flash" %>
